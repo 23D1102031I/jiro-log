@@ -3,67 +3,69 @@
 # Jiro Log 開発ガイド
 
 ## プロジェクト概要
-ラーメン二郎直系専用レビュー＆スタンプラリーアプリ。
-仕様書: `設計/ラーメン二郎直系専用アプリ「Jiro Log」要件定義・仕様書.txt`
-スプリント計画: `設計/SPRINTS.md`
+ラーメン二郎直系専用レビュー＆スタンプラリーWebアプリ。
+- 仕様書: `設計/ラーメン二郎直系専用アプリ「Jiro Log」要件定義・仕様書.txt`
+- 画面遷移: `設計/Jiro Log 画面遷移仕様書.txt`
+- 称号: `設計/二郎称号仕様書.txt`
+- スプリント: `設計/SPRINTS.md`
+- デザイン参照: `二郎サイト素材/LP画像/`（**実装の最優先デザイン基準**）
 
 ## 技術スタック
-- Next.js (App Router) + TypeScript + Tailwind CSS
-- Supabase (Auth/DB/Storage)
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- Supabase (Auth / DB / Storage)
 - React Leaflet (OpenStreetMap)
-- Lucide React
-- Playwright MCP (Evaluator用)
+- Lucide React + motion
 
-## 環境変数
-`.env.local` に以下が設定済み:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-
-## Supabaseクライアント
-- ブラウザ用: `src/lib/supabase/client.ts`
-- サーバー用: `src/lib/supabase/server.ts`
+## 環境
+- Supabaseクライアント: `src/lib/supabase/client.ts` / `src/lib/supabase/server.ts`
+- 環境変数: `.env.local` 設定済み
+- 開発サーバー: `npm run dev` → `http://localhost:3000`
 
 ---
 
-## Generator（実装エージェント）プロトコル
+## スプリント開発フロー
 
-スプリントを1つ担当し、以下の手順で進める:
+ユーザーが「S0Xを実装して」と指示したら以下のループを実行する：
 
-1. **仕様確認**: `設計/SPRINTS.md` で該当スプリントの合格基準を確認
-2. **実装**: フロントエンドUIは必ず `/frontend-design` スキルを使用
-3. **ビルド確認**: `npm run build` が通ることを確認
-4. **自己評価**: 合格基準を1つずつチェックし、結果をレポートとして出力
-5. **引き渡し**: 自己評価レポートをEvaluatorに渡す
+```
+1. Agent(generator) → S0Xを実装・自己評価レポートを出力
+         ↓
+2. Agent(evaluator) → Playwright MCPでテスト・合否判定
+         ↓
+   ✅ 合格 → SPRINTS.mdを更新 → 次のスプリントへ
+   ❌ 不合格 → フィードバックをGeneratorへ渡す
+         ↓
+3. Agent(generator) → フィードバックを受けて修正
+         ↓
+4. Agent(evaluator) → 再テスト → 合格するまで繰り返す
+```
 
-### 実装ルール
-- UIコンポーネントは必ず `/frontend-design` スキルで生成
-- カラー: ベース白 `#FFFFFF`, アクセント黄 `#FFFF00`, テキスト黒 `#000000`
-- ゲスト閲覧可・投稿はログイン必須
-- フッターに免責事項を必ず表示
-- NGワードフィルターは全テキスト入力に適用
+## エージェント定義
+- Generator: `.claude/agents/generator.md`
+- Evaluator: `.claude/agents/evaluator.md`
 
 ---
 
-## Evaluator（評価エージェント）プロトコル
+## デザイン原則（全エージェント共通）
 
-GeneratorのPRを受け取り、Playwright MCPを使って以下を実施:
+| 要素 | 値 |
+|------|-----|
+| ベース | `#FFFFFF` |
+| アクセント | `#FFFF00`（電気イエロー） |
+| テキスト | `#000000` / `#333333` |
+| ロゴ | Bebas Neue |
+| 本文 | Noto Sans JP |
+| カード | `rounded-xl shadow-md border border-gray-100` |
+| CTAボタン | `bg-[#FFFF00] text-black font-bold` |
 
-1. **開発サーバー起動確認**: `http://localhost:3000` が応答するか確認
-2. **合格基準テスト**: `設計/SPRINTS.md` の各チェック項目をPlaywrightで検証
-3. **評価レポート出力**:
-   ```
-   スプリント: S0X
-   結果: 合格 / 不合格
-   合格項目: X/Y
-   不合格項目と詳細:
-   - [ ] ○○が動作しない: [スクリーンショット or エラー詳細]
-   改善提案:
-   - ...
-   ```
-4. **判定**: 全項目合格 → スプリント完了。1つでも不合格 → Generatorへフィードバック
+**LP画像（`二郎サイト素材/LP画像/`）が最優先の設計基準。**
 
-### 評価の閾値
-- **ビルドエラー**: 0件（必須）
-- **合格基準**: 全項目クリア（1つでも不合格でスプリント不合格）
-- **レスポンシブ**: モバイル375px・PC1280pxで崩れなし
-- **ロード時間**: 初回表示3秒以内（目安）
+---
+
+## セキュリティルール
+- ゲスト: 閲覧のみ可。投稿・いいね・マイページはログイン必須
+- `/admin`: 管理者ロールのみアクセス可
+- RLS: Supabaseで設定済み（マイグレーション参照）
+- フッター免責事項: **必ず全ページに表示**
+  > 「当サイトは非公式ファンサイトであり、株式会社ラーメン二郎とは一切関係ありません」
