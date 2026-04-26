@@ -46,7 +46,7 @@ export function Footer() {
         {/* Disclaimer */}
         <div className="mt-8 pt-6 border-t border-gray-800">
           <p className="text-xs text-gray-400 leading-relaxed">
-            当サイトは非公式ファンサイトであり、株式会社ラーメン二郎とは一切関係ありません。
+            当サイトは非公式ファンサイトであり、有限会社ラーメン二郎とは一切関係ありません。
           </p>
           <p className="text-xs text-gray-600 mt-2">
             © 2026 Jiro Log. All rights reserved.

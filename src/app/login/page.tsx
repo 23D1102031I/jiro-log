@@ -82,7 +82,7 @@ export default function LoginPage() {
       <p className="text-xs text-gray-400 mt-6 text-center">
         当サイトは非公式ファンサイトであり、
         <br />
-        株式会社ラーメン二郎とは一切関係ありません。
+        有限会社ラーメン二郎とは一切関係ありません。
       </p>
     </div>
   );
