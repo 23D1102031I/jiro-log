@@ -121,103 +121,6 @@ function mapToPrevData(data: RawRow[]): PrevData[] {
   });
 }
 
-// ─── 年間ヒートマップ ──────────────────────────────────
-function YearHeatmap({ allDates, currentYear }: { allDates: string[]; currentYear: number }) {
-  const today = new Date();
-  const countByDate = allDates.reduce<Record<string, number>>((acc, d) => {
-    acc[d] = (acc[d] ?? 0) + 1;
-    return acc;
-  }, {});
-
-  const yearStart = new Date(currentYear, 0, 1);
-  const yearEnd = currentYear === today.getFullYear() ? today : new Date(currentYear, 11, 31);
-
-  const gridStart = new Date(yearStart);
-  gridStart.setDate(gridStart.getDate() - gridStart.getDay());
-
-  type Cell = { date: string | null; count: number };
-  const weeks: Cell[][] = [];
-  const monthLabels: { weekIdx: number; label: string }[] = [];
-  const cur = new Date(gridStart);
-
-  while (cur <= yearEnd) {
-    const week: Cell[] = [];
-    for (let d = 0; d < 7; d++) {
-      const inYear = cur.getFullYear() === currentYear && cur <= yearEnd;
-      const dateStr = inYear ? toDateStr(new Date(cur)) : null;
-      if (inYear && cur.getDate() === 1) {
-        monthLabels.push({ weekIdx: weeks.length, label: `${cur.getMonth() + 1}月` });
-      }
-      week.push({ date: dateStr, count: dateStr ? (countByDate[dateStr] ?? 0) : 0 });
-      cur.setDate(cur.getDate() + 1);
-    }
-    weeks.push(week);
-  }
-
-  const getColor = (count: number) => {
-    if (count === 0) return "bg-gray-100";
-    if (count === 1) return "bg-yellow-200";
-    if (count === 2) return "bg-yellow-400";
-    return "bg-[#FFFF00]";
-  };
-
-  const yearTotal = allDates.filter(d => d.startsWith(String(currentYear))).length;
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-black text-gray-800">{currentYear}年の実食記録</h3>
-        <span className="text-xs text-gray-400">
-          年間 <span className="font-bold text-gray-700">{yearTotal}</span> 件
-        </span>
-      </div>
-      <div className="overflow-x-auto">
-        <div className="min-w-max">
-          {/* 月ラベル */}
-          <div className="flex gap-[2px] mb-1">
-            {weeks.map((_, wi) => {
-              const ml = monthLabels.find(m => m.weekIdx === wi);
-              return (
-                <div key={wi} className="w-[11px] flex-shrink-0 relative h-3">
-                  {ml && (
-                    <span className="absolute text-[9px] text-gray-400 whitespace-nowrap leading-none">
-                      {ml.label}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          {/* グリッド */}
-          <div className="flex gap-[2px]">
-            {weeks.map((week, wi) => (
-              <div key={wi} className="flex flex-col gap-[2px]">
-                {week.map((cell, di) => (
-                  <div
-                    key={di}
-                    title={cell.date && cell.count > 0 ? `${cell.date}: ${cell.count}回` : (cell.date ?? "")}
-                    className={`w-[11px] h-[11px] rounded-[2px] transition-colors ${
-                      cell.date ? getColor(cell.count) : "opacity-0"
-                    }`}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-          {/* 凡例 */}
-          <div className="flex items-center gap-1 mt-2 justify-end">
-            <span className="text-[9px] text-gray-400">少</span>
-            {["bg-gray-100", "bg-yellow-200", "bg-yellow-400", "bg-[#FFFF00]"].map((cls) => (
-              <div key={cls} className={`w-[11px] h-[11px] rounded-[2px] ${cls}`} />
-            ))}
-            <span className="text-[9px] text-gray-400">多</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── 選択日レビューカード ──────────────────────────────
 function ReviewCard({ review }: { review: ReviewData }) {
   const activeCalls = [
@@ -440,10 +343,7 @@ export function CalendarView({ userId, isOwner }: Props) {
 
   return (
     <>
-      {/* ① 年間ヒートマップ */}
-      <YearHeatmap allDates={allDateStrings} currentYear={today.getFullYear()} />
-
-      {/* ② 2カラム: カレンダー | スタッツ */}
+      {/* ① 2カラム: カレンダー | スタッツ */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
 
         {/* ─ 左: カレンダー ─ */}
