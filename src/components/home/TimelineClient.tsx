@@ -95,12 +95,12 @@ function LikeButton({ reviewId, userId }: { reviewId: string; userId: string | n
 }
 
 function ReviewCard({ review, userId }: { review: TimelineReview; userId: string | null }) {
-  const callValues = [
+  const allCalls = [
     { label: "野菜", value: review.call_yasai },
     { label: "ニンニク", value: review.call_garlic },
     { label: "アブラ", value: review.call_abura },
     { label: "カラメ", value: review.call_karame },
-  ].filter((c) => c.value && ["マシ", "マシマシ"].includes(c.value ?? ""));
+  ];
 
   const miniParams = [
     { label: "麺太さ", value: review.thickness_score },
@@ -113,83 +113,96 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex">
-      {/* 左: 正方形サムネイル */}
-      <Link href={`/reviews/${review.id}`} className="relative flex-shrink-0 w-24 sm:w-28 bg-gray-100">
+      {/* 左: 大きめ正方形サムネイル */}
+      <Link href={`/reviews/${review.id}`} className="relative flex-shrink-0 w-36 sm:w-44 bg-gray-100">
         {review.images?.[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={review.images[0]}
             alt=""
-            className="w-full h-full object-cover aspect-square"
-            style={{ minHeight: "96px" }}
+            className="w-full h-full object-cover"
+            style={{ minHeight: "144px" }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-3xl" style={{ minHeight: "96px" }}>🍜</div>
+          <div className="w-full h-full flex items-center justify-center text-4xl" style={{ minHeight: "144px" }}>🍜</div>
         )}
       </Link>
 
       {/* 右: コンテンツ */}
-      <div className="flex-1 p-3 min-w-0 flex flex-col justify-between">
-        <div>
-          {/* 店舗名 + 評価 */}
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <Link
-              href={`/stores/${review.store_id}`}
-              className="font-bold text-sm text-gray-900 truncate hover:underline leading-tight"
-            >
-              {review.stores?.name ?? "—"}
-            </Link>
-            <Link href={`/reviews/${review.id}`} className="flex items-center gap-0.5 flex-shrink-0">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <Star key={n} className={`w-3 h-3 ${n <= review.rating ? "fill-[#FFFF00] text-[#FFFF00]" : "text-gray-200"}`} />
-              ))}
-              <span className="text-xs font-black ml-0.5 text-gray-700">{Number(review.rating).toFixed(1)}</span>
-            </Link>
-          </div>
+      <div className="flex-1 p-3 sm:p-4 min-w-0 flex flex-col gap-1.5">
+        {/* 店舗名 + 評価 */}
+        <div className="flex items-start justify-between gap-2">
+          <Link
+            href={`/stores/${review.store_id}`}
+            className="font-black text-sm sm:text-base text-gray-900 hover:underline leading-tight"
+          >
+            {review.stores?.name ?? "—"}
+          </Link>
+          <Link href={`/reviews/${review.id}`} className="flex items-center gap-0.5 flex-shrink-0">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Star key={n} className={`w-3.5 h-3.5 ${n <= review.rating ? "fill-[#FFFF00] text-[#FFFF00]" : "text-gray-200"}`} />
+            ))}
+            <span className="text-sm font-black ml-1 text-gray-800">{Number(review.rating).toFixed(1)}</span>
+          </Link>
+        </div>
 
-          {/* コール */}
-          {callValues.length > 0 && (
-            <div className="flex gap-1 flex-wrap mb-1">
-              {callValues.map(({ label, value }) => (
-                <span key={label} className="px-1.5 py-0.5 bg-[#FFFF00] text-black text-xs font-bold rounded">
-                  {label}: {value}
-                </span>
-              ))}
+        {/* コール（全項目表示） */}
+        <div className="flex gap-1 flex-wrap">
+          {allCalls.map(({ label, value }) => {
+            const isHigh = value && ["マシ", "マシマシ"].includes(value);
+            return (
+              <span
+                key={label}
+                className={`px-1.5 py-0.5 text-[10px] font-bold rounded border ${
+                  isHigh
+                    ? "bg-[#FFFF00] text-black border-black"
+                    : "bg-white text-gray-400 border-gray-200"
+                }`}
+              >
+                {label}: {value ?? "標準"}
+              </span>
+            );
+          })}
+        </div>
+
+        {/* コメントプレビュー */}
+        {review.comment && (
+          <Link href={`/reviews/${review.id}`} className="block">
+            <div className="bg-gray-50 rounded-lg px-2.5 py-2 border-l-2 border-[#FFFF00] hover:bg-gray-100 transition-colors">
+              <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">{review.comment}</p>
             </div>
-          )}
+          </Link>
+        )}
 
-          {/* コメント */}
-          {review.comment && (
-            <Link href={`/reviews/${review.id}`}>
-              <p className="text-xs text-gray-500 line-clamp-1 hover:text-gray-700">{review.comment}</p>
-            </Link>
-          )}
-
-          {/* ミニパラメータバー（PC表示のみ） */}
-          <div className="hidden md:block mt-3 space-y-1">
-            {miniParams.map(({ label, value }) => (
-              <div key={label} className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-400 w-10 shrink-0">{label}</span>
-                <div className="flex-1 bg-gray-100 rounded-full h-1">
+        {/* ミニパラメータ（sm以上で表示・2列グリッド・ドット位置表示） */}
+        <div className="hidden sm:grid grid-cols-2 gap-x-3 gap-y-1.5 mt-0.5">
+          {miniParams.map(({ label, value }) => {
+            const v = Math.max(1, Math.min(5, value ?? 1));
+            const pct = ((v - 1) / 4) * 100;
+            return (
+              <div key={label} className="flex items-center gap-1.5">
+                <span className="text-[9px] text-gray-400 w-8 shrink-0">{label}</span>
+                <div className="relative flex-1 h-px bg-gray-200 my-1.5">
                   <div
-                    className="h-1 rounded-full bg-[#FFFF00]"
-                    style={{ width: `${((value ?? 0) / 5) * 100}%` }}
+                    className="absolute w-2.5 h-2.5 bg-[#FFFF00] rounded-full border border-gray-300 -top-[4px] -translate-x-1/2 shadow-sm"
+                    style={{ left: `${pct}%` }}
                   />
                 </div>
+                <span className="text-[9px] font-bold text-gray-500 w-2.5 text-right">{v}</span>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
         {/* フッター */}
-        <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center justify-between mt-auto pt-1.5 border-t border-gray-50">
           {review.user_id ? (
             <Link href={`/users/${review.user_id}`} className="flex items-center gap-1.5 hover:opacity-80">
               {review.users?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={review.users.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover" />
+                <img src={review.users.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" />
               ) : (
-                <div className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center text-[10px]">
+                <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold">
                   {review.users?.username?.[0]?.toUpperCase() ?? "?"}
                 </div>
               )}
