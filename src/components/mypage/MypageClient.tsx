@@ -189,7 +189,7 @@ export function MypageClient({ username, avatarUrl, topTitle, titles, stats, avg
         </h2>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           {stats.totalReviews > 0 ? (
-            <div className="flex flex-col sm:flex-row items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="flex flex-col items-center flex-shrink-0">
                 <RadarChart values={avgParams} size={220} />
                 <p className="text-xs text-gray-400 mt-2">{stats.totalReviews}件のレビューの平均</p>
