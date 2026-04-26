@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/ui/Spinner";
 
@@ -75,7 +76,10 @@ export default function LoginPage() {
         <p className="text-xs text-gray-400 text-center mt-4 leading-relaxed">
           ログインすることで、
           <br />
-          利用規約およびプライバシーポリシーに同意したものとみなします。
+          <Link href="/terms" className="underline hover:text-gray-600">利用規約</Link>
+          および
+          <Link href="/privacy" className="underline hover:text-gray-600">プライバシーポリシー</Link>
+          に同意したものとみなします。
         </p>
       </div>
 

@@ -49,6 +49,9 @@ export function Footer() {
             当サイトは非公式ファンサイトであり、有限会社ラーメン二郎とは一切関係ありません。
           </p>
           <div className="flex gap-4 mt-3">
+            <Link href="/terms" className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
+              利用規約
+            </Link>
             <Link href="/privacy" className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
               プライバシーポリシー
             </Link>
