@@ -82,7 +82,7 @@ export function ImageUploader({ onChange }: Props) {
       const newItems: ImageItem[] = [];
       for (const file of accepted) {
         try {
-          const blob = file.size > 500 * 1024 ? await compressImage(file) : file;
+          const blob = await compressImage(file);
           const preview = URL.createObjectURL(blob);
           newItems.push({ id: crypto.randomUUID(), preview, blob, originalName: file.name });
         } catch {
