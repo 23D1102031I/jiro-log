@@ -264,9 +264,12 @@ export function MypageClient({ username, avatarUrl, topTitle, titles, stats, avg
         ) : (
           <div className="space-y-3">
             {reviews.map((r) => (
-              <div key={r.id} className="relative bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex gap-3 hover:shadow-md transition-shadow">
-                <Link href={`/reviews/${r.id}`} className="absolute inset-0 rounded-xl" aria-label="レビュー詳細" />
-                <div className="flex-shrink-0 relative z-10 pointer-events-none">
+              <div
+                key={r.id}
+                className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex gap-3 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => router.push(`/reviews/${r.id}`)}
+              >
+                <div className="flex-shrink-0">
                   {r.images && r.images[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={r.images[0]} alt="" className="w-16 h-16 rounded-lg object-cover" />
@@ -274,9 +277,13 @@ export function MypageClient({ username, avatarUrl, topTitle, titles, stats, avg
                     <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-2xl">🍜</div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0 relative z-10">
+                <div className="flex-1 min-w-0">
                   {r.store_id ? (
-                    <Link href={`/stores/${r.store_id}`} className="text-sm font-bold text-gray-900 truncate hover:underline block relative z-20">
+                    <Link
+                      href={`/stores/${r.store_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-sm font-bold text-gray-900 truncate hover:underline block"
+                    >
                       {r.stores?.name ?? "—"}
                     </Link>
                   ) : (

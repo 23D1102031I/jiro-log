@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Heart, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -96,6 +97,7 @@ function LikeButton({ reviewId, userId }: { reviewId: string; userId: string | n
 }
 
 function ReviewCard({ review, userId }: { review: TimelineReview; userId: string | null }) {
+  const router = useRouter();
   const allCalls = [
     { label: "野菜", value: review.call_yasai },
     { label: "ニンニク", value: review.call_garlic },
@@ -112,12 +114,15 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
     { label: "乳化度", value: review.emulsification_score },
   ];
 
-  return (
-    <div className="relative bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex">
-      <Link href={`/reviews/${review.id}`} className="absolute inset-0 z-0" aria-label="レビュー詳細" />
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
-      {/* 左: 大きめ正方形サムネイル */}
-      <div className="relative flex-shrink-0 w-36 sm:w-44 bg-gray-100 pointer-events-none">
+  return (
+    <div
+      className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex cursor-pointer"
+      onClick={() => router.push(`/reviews/${review.id}`)}
+    >
+      {/* 左: サムネイル */}
+      <div className="flex-shrink-0 w-36 sm:w-44 bg-gray-100">
         {review.images?.[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={review.images[0]} alt="" className="w-full h-full object-cover" style={{ minHeight: "144px" }} />
@@ -127,12 +132,13 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
       </div>
 
       {/* 右: コンテンツ */}
-      <div className="flex-1 p-3 sm:p-4 min-w-0 flex flex-col gap-1.5 relative z-10">
+      <div className="flex-1 p-3 sm:p-4 min-w-0 flex flex-col gap-1.5">
         {/* 店舗名 + 評価 */}
         <div className="flex items-start justify-between gap-2">
           <Link
             href={`/stores/${review.store_id}`}
-            className="font-black text-sm sm:text-base text-gray-900 hover:underline leading-tight relative z-20"
+            onClick={stop}
+            className="font-black text-sm sm:text-base text-gray-900 hover:underline leading-tight"
           >
             {review.stores?.name ?? "—"}
           </Link>
@@ -144,7 +150,7 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
           </div>
         </div>
 
-        {/* コール（全項目表示） */}
+        {/* コール */}
         <div className="flex gap-1 flex-wrap">
           {allCalls.map(({ label, value }) => {
             const isHigh = value && ["マシ", "マシマシ"].includes(value);
@@ -168,7 +174,7 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
           </div>
         )}
 
-        {/* ミニパラメータ（sm以上で表示・2列グリッド・ドット位置表示） */}
+        {/* ミニパラメータ */}
         <div className="hidden sm:grid grid-cols-2 gap-x-4 gap-y-2 mt-1">
           {miniParams.map(({ label, value }) => {
             const v = Math.max(1, Math.min(5, value ?? 1));
@@ -191,7 +197,7 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
         {/* フッター */}
         <div className="flex items-center justify-between mt-auto pt-1.5 border-t border-gray-50">
           {review.user_id ? (
-            <Link href={`/users/${review.user_id}`} className="flex items-center gap-1.5 hover:opacity-80 relative z-20">
+            <Link href={`/users/${review.user_id}`} onClick={stop} className="flex items-center gap-1.5 hover:opacity-80">
               {review.users?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={review.users.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" />
@@ -205,7 +211,7 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
           ) : (
             <span className="text-xs text-gray-400">@{review.users?.username ?? "—"}</span>
           )}
-          <div className="flex items-center gap-2 relative z-20">
+          <div className="flex items-center gap-2" onClick={stop}>
             <LikeButton reviewId={review.id} userId={userId} />
             <span className="text-xs text-gray-300">
               {new Date(review.created_at).toLocaleDateString("ja-JP")}
