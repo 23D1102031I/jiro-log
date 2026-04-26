@@ -26,6 +26,9 @@ export const metadata: Metadata = {
     description: "ラーメン二郎直系専用レビューアプリ",
     type: "website",
   },
+  verification: {
+    google: "l2bH5xZtny8vtfHrU9Jsrv0aZwQyHJRg8-Fy2sUlZl8",
+  },
 };
 
 export default function RootLayout({
