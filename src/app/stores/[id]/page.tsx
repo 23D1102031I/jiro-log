@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { RadarChart } from "@/components/mypage/RadarChart";
 import { WeeklyHoursPanel } from "@/components/stores/WeeklyHoursPanel";
 import type { WeeklyHours } from "@/components/stores/WeeklyHoursPanel";
+import { MenuSection } from "@/components/stores/MenuSection";
+import type { StoreMenu } from "@/components/stores/MenuSection";
 import { MapPin, Clock, Star } from "lucide-react";
 
 const PARAM_LABELS = [
@@ -40,14 +42,22 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
 
   if (!store) notFound();
 
-  const { data: reviews } = await supabase
-    .from("reviews")
-    .select(
-      "id, rating, comment, images, created_at, call_garlic, call_yasai, call_abura, call_karame, thickness_score, dero_score, vegetable_score, noodle_score, pork_score, emulsification_score, users(id, username, avatar_url)"
-    )
-    .eq("store_id", id)
-    .order("created_at", { ascending: false })
-    .limit(20);
+  const [{ data: { user } }, { data: menuRow }, { data: reviews }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("store_menus").select("ramen, toppings").eq("store_id", id).maybeSingle(),
+    supabase
+      .from("reviews")
+      .select(
+        "id, rating, comment, images, created_at, call_garlic, call_yasai, call_abura, call_karame, thickness_score, dero_score, vegetable_score, noodle_score, pork_score, emulsification_score, users(id, username, avatar_url)"
+      )
+      .eq("store_id", id)
+      .order("created_at", { ascending: false })
+      .limit(20),
+  ]);
+
+  const storeMenu: StoreMenu | null = menuRow
+    ? { ramen: (menuRow.ramen as StoreMenu["ramen"]) ?? [], toppings: (menuRow.toppings as StoreMenu["toppings"]) ?? [] }
+    : null;
 
   const reviewList = reviews ?? [];
   const totalReviews = reviewList.length;
@@ -165,7 +175,16 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
           </div>
         </section>
 
-        {/* ② 中部セクション（My Jiro Identity: RadarChart + パラメータバー） */}
+        {/* ② メニュー */}
+        <section className="mb-8">
+          <MenuSection
+            storeId={store.id as string}
+            initialMenu={storeMenu}
+            isLoggedIn={!!user}
+          />
+        </section>
+
+        {/* ③ 中部セクション（My Jiro Identity: RadarChart + パラメータバー） */}
         <section className="mb-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="text-sm font-black text-gray-500 uppercase tracking-widest mb-5 flex items-center gap-2">
             <span className="w-1 h-4 bg-[#FFFF00] inline-block" />
