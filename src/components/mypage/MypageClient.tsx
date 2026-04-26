@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Pencil, Check, X, CalendarDays } from "lucide-react";
+import { Trash2, Pencil, Check, X, CalendarDays, Share2, Link2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { RadarChart } from "./RadarChart";
@@ -48,7 +48,16 @@ export function MypageClient({ username, avatarUrl, topTitle, titles, stats, avg
   const [currentUsername, setCurrentUsername] = useState(username);
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [savingUsername, setSavingUsername] = useState(false);
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
+
+  const profileUrl = `https://jiro-log-tau.vercel.app/users/${userId}`;
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(profileUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSaveUsername = async () => {
     const trimmed = usernameInput.trim();
@@ -159,6 +168,26 @@ export function MypageClient({ username, avatarUrl, topTitle, titles, stats, avg
           ) : (
             <p className="text-xs text-gray-400 mt-1">まだ称号がありません</p>
           )}
+
+          {/* シェアボタン */}
+          <div className="flex items-center gap-2 mt-3">
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <Link2 className="w-3.5 h-3.5" />
+              {copied ? "コピーしました！" : "リンクをコピー"}
+            </button>
+            <a
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(profileUrl)}&text=${encodeURIComponent(`${currentUsername}のJiro Logプロフィール`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black text-white text-xs font-bold hover:bg-gray-900 transition-colors"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              Xでシェア
+            </a>
+          </div>
         </div>
       </section>
 
