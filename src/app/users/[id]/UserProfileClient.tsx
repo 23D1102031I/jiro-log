@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { RadarChart } from "@/components/mypage/RadarChart";
+import { CalendarView } from "@/app/calendar/CalendarView";
 import { Star } from "lucide-react";
 
 interface Title {
@@ -43,70 +44,6 @@ interface Props {
   reviews: Review[];
   currentUserId: string | null;
   isFollowing: boolean;
-  calendarYear: number;
-  calendarMonth: number;
-  visitedDays: number[];
-}
-
-// ─── Mini Calendar ───────────────────────────────────────────────────────────
-function MiniCalendar({
-  year,
-  month,
-  visitedDays,
-  userId,
-}: {
-  year: number;
-  month: number;
-  visitedDays: number[];
-  userId: string;
-}) {
-  const DAYS = ["日", "月", "火", "水", "木", "金", "土"];
-  const firstDow = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const visited = new Set(visitedDays);
-  const cells = [
-    ...Array(firstDow).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ];
-
-  return (
-    <div>
-      <div className="grid grid-cols-7 mb-1">
-        {DAYS.map((d, i) => (
-          <div
-            key={d}
-            className={`text-center text-[10px] font-bold py-1 ${
-              i === 0 ? "text-red-500" : i === 6 ? "text-blue-500" : "text-gray-400"
-            }`}
-          >
-            {d}
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-0.5">
-        {cells.map((day, idx) => (
-          <div key={idx} className="aspect-square flex flex-col items-center justify-center">
-            {day !== null && (
-              <>
-                <span className="text-[10px] text-gray-600">{day}</span>
-                {visited.has(day) && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#FFFF00] border border-black mt-0.5" />
-                )}
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="mt-4 text-center">
-        <Link
-          href={`/users/${userId}/calendar`}
-          className="inline-block text-xs font-bold text-gray-600 hover:text-black border border-gray-200 hover:border-black px-4 py-1.5 rounded-full transition-colors"
-        >
-          全期間を見る →
-        </Link>
-      </div>
-    </div>
-  );
 }
 
 // ─── Section Heading ─────────────────────────────────────────────────────────
@@ -132,9 +69,6 @@ export function UserProfileClient({
   reviews,
   currentUserId,
   isFollowing: initialIsFollowing,
-  calendarYear,
-  calendarMonth,
-  visitedDays,
 }: Props) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [loading, setLoading] = useState(false);
@@ -350,21 +284,10 @@ export function UserProfileClient({
           )}
         </section>
 
-        {/* ③ ミニカレンダー */}
+        {/* ③ 実食カレンダー */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <SectionHeading>
-              実食カレンダー（{calendarYear}年{calendarMonth + 1}月）
-            </SectionHeading>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <MiniCalendar
-              year={calendarYear}
-              month={calendarMonth}
-              visitedDays={visitedDays}
-              userId={userId}
-            />
-          </div>
+          <SectionHeading>実食カレンダー</SectionHeading>
+          <CalendarView userId={userId} isOwner={currentUserId === userId} />
         </section>
 
         {/* ④ レビュー履歴 */}

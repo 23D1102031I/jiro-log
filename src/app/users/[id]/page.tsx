@@ -139,26 +139,6 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
     };
   });
 
-  // Mini calendar data (current month visited days)
-  const now = new Date();
-  const calendarYear = now.getFullYear();
-  const calendarMonth = now.getMonth();
-  const y = calendarYear;
-  const m = calendarMonth;
-  const monthStart = `${y}-${String(m + 1).padStart(2, "0")}-01`;
-  const monthEnd = `${y}-${String(m + 1).padStart(2, "0")}-${String(new Date(y, m + 1, 0).getDate()).padStart(2, "0")}`;
-
-  const { data: calReviews } = await supabase
-    .from("reviews")
-    .select("eaten_at, created_at")
-    .eq("user_id", id)
-    .or(`and(eaten_at.gte.${monthStart},eaten_at.lte.${monthEnd}),and(eaten_at.is.null,created_at.gte.${monthStart}T00:00:00,created_at.lte.${monthEnd}T23:59:59)`);
-
-  const visitedDays = Array.from(new Set(
-    (calReviews ?? []).map((r) =>
-      Number(((r.eaten_at ?? r.created_at) as string).slice(8, 10))
-    )
-  ));
 
   return (
     <>
@@ -184,9 +164,6 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
             reviews={reviewsForClient}
             currentUserId={authUser?.id ?? null}
             isFollowing={isFollowing}
-            calendarYear={calendarYear}
-            calendarMonth={calendarMonth}
-            visitedDays={visitedDays}
           />
         </div>
       </main>
