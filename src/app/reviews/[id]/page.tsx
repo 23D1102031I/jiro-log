@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { createClient } from "@/lib/supabase/server";
 import { RadarChart } from "@/components/mypage/RadarChart";
 import { ReviewDetailActions } from "@/components/review/ReviewDetailActions";
+import { ImageLightbox } from "@/components/review/ImageLightbox";
 import { Star, Heart } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -168,20 +169,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
 
             {/* 大画像 */}
             {firstImage && (
-              <div className="space-y-2">
-                {/* 1枚目: aspect-video 全幅 */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={firstImage} alt="" className="rounded-2xl w-full aspect-video object-cover" />
-                {/* 2枚目以降: 小サムネイル4列 */}
-                {restImages.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {restImages.map((url: string, i: number) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={url} alt="" className="rounded-xl w-full aspect-square object-cover" />
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ImageLightbox images={[firstImage, ...restImages]} />
             )}
 
             {/* 総合評価 */}
