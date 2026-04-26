@@ -73,7 +73,7 @@ export function MapDisplay({ stores, selectedStoreId, onStoreSelect, visitedStor
               <div style="font-size:11px;color:#666;margin-bottom:6px">${store.address}</div>
               ${store.closed_days ? `<div style="font-size:11px;color:#888">定休日: ${store.closed_days}</div>` : ""}
             </div>`,
-            { maxWidth: 260 }
+            { maxWidth: 260, autoPan: false }
           );
 
         marker.on("click", () => onStoreSelect(store.id));
@@ -91,7 +91,7 @@ export function MapDisplay({ stores, selectedStoreId, onStoreSelect, visitedStor
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Pan to selected store
+  // 選択店舗をマップ中央にアニメーションで移動
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !selectedStoreId) return;
@@ -99,7 +99,7 @@ export function MapDisplay({ stores, selectedStoreId, onStoreSelect, visitedStor
     const store = stores.find((s) => s.id === selectedStoreId);
     if (!store) return;
 
-    map.setView([store.lat, store.lng], 15, { animate: true });
+    map.flyTo([store.lat, store.lng], 15, { duration: 0.8 });
     markersRef.current.get(selectedStoreId)?.openPopup();
   }, [selectedStoreId, stores]);
 
