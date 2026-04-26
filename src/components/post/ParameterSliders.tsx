@@ -6,7 +6,7 @@ export const PARAM_DEFS = [
   { key: "vegetable_score", label: "野菜量", minLabel: "少量", maxLabel: "山盛り" },
   { key: "noodle_score", label: "麺量", minLabel: "少ない", maxLabel: "大盛り" },
   { key: "pork_score", label: "神豚度", minLabel: "パサ豚", maxLabel: "神豚" },
-  { key: "emulsification_score", label: "乳化度", minLabel: "非乳化", maxLabel: "完全乳化" },
+  { key: "emulsification_score", label: "乳化度", minLabel: "非乳化", maxLabel: "ド乳化" },
 ] as const;
 
 export type ParamKey = (typeof PARAM_DEFS)[number]["key"];
@@ -17,7 +17,7 @@ export const DEFAULT_PARAMS: ParamValues = {
   dero_score: 3,
   vegetable_score: 3,
   noodle_score: 3,
-  pork_score: 1,
+  pork_score: 3,
   emulsification_score: 3,
 };
 
