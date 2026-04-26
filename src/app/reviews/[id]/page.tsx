@@ -39,7 +39,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
     supabase
       .from("reviews")
       .select(
-        "id, rating, comment, images, created_at, eaten_at, store_id, call_garlic, call_yasai, call_abura, call_karame, thickness_score, dero_score, vegetable_score, noodle_score, pork_score, emulsification_score, users(id, username, avatar_url), stores(id, name, address)"
+        "id, rating, comment, images, created_at, eaten_at, store_id, user_id, call_garlic, call_yasai, call_abura, call_karame, thickness_score, dero_score, vegetable_score, noodle_score, pork_score, emulsification_score, users(id, username, avatar_url), stores(id, name, address)"
       )
       .eq("id", id)
       .single(),
@@ -265,7 +265,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
               <ReviewDetailActions
                 reviewId={id}
                 userId={authUser?.id ?? null}
-                reviewOwnerId={user?.id ?? null}
+                reviewOwnerId={review.user_id as string ?? null}
                 shareUrl={shareUrl}
                 shareText={shareText}
               />
