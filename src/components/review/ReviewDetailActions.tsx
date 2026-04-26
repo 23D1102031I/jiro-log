@@ -22,7 +22,6 @@ export function ReviewDetailActions({ reviewId, userId, reviewOwnerId, shareUrl,
   const [count, setCount] = useState(0);
   const [likeLoading, setLikeLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   const isOwner = !!userId && userId === reviewOwnerId;
@@ -62,7 +61,7 @@ export function ReviewDetailActions({ reviewId, userId, reviewOwnerId, shareUrl,
   };
 
   const handleDelete = async () => {
-    if (deleteConfirm !== "削除する" || deleting) return;
+    if (deleting) return;
     setDeleting(true);
     try {
       const supabase = createClient();
@@ -144,29 +143,16 @@ export function ReviewDetailActions({ reviewId, userId, reviewOwnerId, shareUrl,
               <p className="text-red-500 font-medium mt-1">条件を満たさなくなった称号は剥奪されます。</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                確認のため「削除する」と入力してください
-              </label>
-              <input
-                type="text"
-                value={deleteConfirm}
-                onChange={(e) => setDeleteConfirm(e.target.value)}
-                placeholder="削除する"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-              />
-            </div>
-
             <div className="flex gap-3">
               <button
-                onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }}
+                onClick={() => setShowDeleteModal(false)}
                 className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 キャンセル
               </button>
               <button
                 onClick={handleDelete}
-                disabled={deleteConfirm !== "削除する" || deleting}
+                disabled={deleting}
                 className="flex-1 py-3 bg-red-600 text-white rounded-xl text-sm font-black hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
               >
                 {deleting ? (
