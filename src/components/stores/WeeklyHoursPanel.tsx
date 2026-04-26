@@ -41,7 +41,12 @@ function groupByHours(w: WeeklyHours): DayGroup[] {
       groups.push({ days: [key], hours });
     }
   }
-  return groups;
+  // 定休日グループを先頭に
+  return groups.sort((a, b) => {
+    if (a.hours === null && b.hours !== null) return -1;
+    if (a.hours !== null && b.hours === null) return 1;
+    return 0;
+  });
 }
 
 function getTodayKey(): DayKey {
