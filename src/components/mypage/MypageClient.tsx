@@ -49,7 +49,20 @@ export function MypageClient({ username, avatarUrl, topTitle, titles, stats, avg
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [savingUsername, setSavingUsername] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedStore, setSelectedStore] = useState("");
   const router = useRouter();
+
+  const storeOptions = Array.from(
+    new Map(
+      reviews
+        .filter((r) => r.store_id && r.stores?.name)
+        .map((r) => [r.store_id!, r.stores!.name])
+    ).entries()
+  ).sort((a, b) => a[1].localeCompare(b[1], "ja"));
+
+  const filteredReviews = selectedStore
+    ? reviews.filter((r) => r.store_id === selectedStore)
+    : reviews;
 
   const profileUrl = `https://jiro-log-tau.vercel.app/users/${userId}`;
 
@@ -282,17 +295,38 @@ export function MypageClient({ username, avatarUrl, topTitle, titles, stats, avg
 
       {/* Review history */}
       <section className="mb-12">
-        <h2 className="text-sm font-black text-gray-800 mb-4 flex items-center gap-2">
-          <span className="w-1 h-5 bg-[#FFFF00] inline-block" />
-          レビュー履歴
-        </h2>
+        <div className="flex items-center justify-between mb-4 gap-3">
+          <h2 className="text-sm font-black text-gray-800 flex items-center gap-2 flex-shrink-0">
+            <span className="w-1 h-5 bg-[#FFFF00] inline-block" />
+            レビュー履歴
+          </h2>
+          {storeOptions.length > 0 && (
+            <div className="relative">
+              <select
+                value={selectedStore}
+                onChange={(e) => setSelectedStore(e.target.value)}
+                className="appearance-none border border-gray-200 rounded-lg px-3 py-1.5 pr-7 text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#FFFF00] focus:border-transparent bg-white"
+              >
+                <option value="">すべての店舗</option>
+                {storeOptions.map(([id, name]) => (
+                  <option key={id} value={id}>{name}</option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
+            </div>
+          )}
+        </div>
         {reviews.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400">
             <p className="text-sm">まだレビューがありません</p>
           </div>
+        ) : filteredReviews.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400">
+            <p className="text-sm">該当するレビューがありません</p>
+          </div>
         ) : (
           <div className="space-y-3">
-            {reviews.map((r) => (
+            {filteredReviews.map((r) => (
               <div
                 key={r.id}
                 className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex gap-3 hover:shadow-md transition-shadow cursor-pointer"
