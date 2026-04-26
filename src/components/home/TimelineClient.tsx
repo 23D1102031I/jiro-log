@@ -24,6 +24,12 @@ export interface TimelineReview {
   stores: ReviewStore | null;
   store_id: string;
   user_id: string | null;
+  thickness_score: number | null;
+  dero_score: number | null;
+  vegetable_score: number | null;
+  noodle_score: number | null;
+  pork_score: number | null;
+  emulsification_score: number | null;
 }
 
 interface Props {
@@ -96,6 +102,15 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
     { label: "カラメ", value: review.call_karame },
   ].filter((c) => c.value && ["マシ", "マシマシ"].includes(c.value ?? ""));
 
+  const miniParams = [
+    { label: "麺太さ", value: review.thickness_score },
+    { label: "デロさ", value: review.dero_score },
+    { label: "ヤサイ", value: review.vegetable_score },
+    { label: "麺量", value: review.noodle_score },
+    { label: "神豚度", value: review.pork_score },
+    { label: "乳化度", value: review.emulsification_score },
+  ];
+
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex">
       {/* 左: 正方形サムネイル */}
@@ -149,6 +164,21 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
               <p className="text-xs text-gray-500 line-clamp-1 hover:text-gray-700">{review.comment}</p>
             </Link>
           )}
+
+          {/* ミニパラメータバー（PC表示のみ） */}
+          <div className="hidden md:block mt-3 space-y-1">
+            {miniParams.map(({ label, value }) => (
+              <div key={label} className="flex items-center gap-2">
+                <span className="text-[10px] text-gray-400 w-10 shrink-0">{label}</span>
+                <div className="flex-1 bg-gray-100 rounded-full h-1">
+                  <div
+                    className="h-1 rounded-full bg-[#FFFF00]"
+                    style={{ width: `${((value ?? 0) / 5) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* フッター */}
@@ -203,7 +233,16 @@ export function TimelineClient({ initialReviews, currentUserId }: Props) {
     stores: Array.isArray(r.stores) ? (r.stores as ReviewStore[])[0] ?? null : r.stores as ReviewStore | null,
     store_id: r.store_id as string,
     user_id: r.user_id as string | null ?? null,
+    thickness_score: r.thickness_score as number | null ?? null,
+    dero_score: r.dero_score as number | null ?? null,
+    vegetable_score: r.vegetable_score as number | null ?? null,
+    noodle_score: r.noodle_score as number | null ?? null,
+    pork_score: r.pork_score as number | null ?? null,
+    emulsification_score: r.emulsification_score as number | null ?? null,
   });
+
+  const SELECT_FIELDS =
+    "id, rating, comment, images, created_at, call_garlic, call_yasai, call_abura, call_karame, store_id, user_id, thickness_score, dero_score, vegetable_score, noodle_score, pork_score, emulsification_score, users(username, avatar_url), stores(name, region)";
 
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
@@ -212,9 +251,7 @@ export function TimelineClient({ initialReviews, currentUserId }: Props) {
 
     let baseQuery = supabase
       .from("reviews")
-      .select(
-        "id, rating, comment, images, created_at, call_garlic, call_yasai, call_abura, call_karame, store_id, user_id, users(username, avatar_url), stores(name, region)"
-      )
+      .select(SELECT_FIELDS)
       .order("created_at", { ascending: false })
       .range(offsetRef.current, offsetRef.current + PAGE_SIZE - 1);
 
@@ -259,9 +296,7 @@ export function TimelineClient({ initialReviews, currentUserId }: Props) {
 
     let baseQuery = supabase
       .from("reviews")
-      .select(
-        "id, rating, comment, images, created_at, call_garlic, call_yasai, call_abura, call_karame, store_id, user_id, users(username, avatar_url), stores(name, region)"
-      )
+      .select(SELECT_FIELDS)
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1);
 
