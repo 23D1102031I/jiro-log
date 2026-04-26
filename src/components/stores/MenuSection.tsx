@@ -11,6 +11,7 @@ export type StoreMenu = { ramen: MenuItem[]; toppings: MenuItem[] };
 interface Props {
   storeId: string;
   initialMenu: StoreMenu | null;
+  initialUpdatedAt: string | null;
   isLoggedIn: boolean;
 }
 
@@ -25,10 +26,11 @@ function PriceText({ price }: { price: number | null }) {
   );
 }
 
-export function MenuSection({ storeId, initialMenu, isLoggedIn }: Props) {
+export function MenuSection({ storeId, initialMenu, initialUpdatedAt, isLoggedIn }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [menu, setMenu] = useState<StoreMenu>(initialMenu ?? EMPTY);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(initialUpdatedAt);
   const [draft, setDraft] = useState<StoreMenu>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +100,7 @@ export function MenuSection({ storeId, initialMenu, isLoggedIn }: Props) {
       if (err) throw err;
 
       setMenu({ ramen: payload.ramen, toppings: payload.toppings });
+      setUpdatedAt(payload.updated_at);
       setEditing(false);
       router.refresh();
     } catch (e) {
@@ -115,10 +118,17 @@ export function MenuSection({ storeId, initialMenu, isLoggedIn }: Props) {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {/* ヘッダー */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
-          <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900">
-            <span className="w-1 h-5 bg-[#FFFF00] rounded-full" />
-            メニュー
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900">
+              <span className="w-1 h-5 bg-[#FFFF00] rounded-full" />
+              メニュー
+            </h2>
+            {updatedAt && (
+              <span className="text-[10px] text-gray-400">
+                更新: {new Date(updatedAt).toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" })}
+              </span>
+            )}
+          </div>
           {isLoggedIn && (
             <button
               onClick={startEdit}

@@ -44,7 +44,7 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
 
   const [{ data: { user } }, { data: menuRow }, { data: reviews }] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from("store_menus").select("ramen, toppings").eq("store_id", id).maybeSingle(),
+    supabase.from("store_menus").select("ramen, toppings, updated_at").eq("store_id", id).maybeSingle(),
     supabase
       .from("reviews")
       .select(
@@ -58,6 +58,7 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
   const storeMenu: StoreMenu | null = menuRow
     ? { ramen: (menuRow.ramen as StoreMenu["ramen"]) ?? [], toppings: (menuRow.toppings as StoreMenu["toppings"]) ?? [] }
     : null;
+  const menuUpdatedAt: string | null = menuRow?.updated_at ?? null;
 
   const reviewList = reviews ?? [];
   const totalReviews = reviewList.length;
@@ -180,6 +181,7 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
           <MenuSection
             storeId={store.id as string}
             initialMenu={storeMenu}
+            initialUpdatedAt={menuUpdatedAt}
             isLoggedIn={!!user}
           />
         </section>
