@@ -22,6 +22,7 @@ interface Review {
   comment: string | null;
   images: string[] | null;
   created_at: string;
+  store_id: string | null;
   stores: { name: string } | null;
 }
 
@@ -264,22 +265,28 @@ export function MypageClient({ username, avatarUrl, topTitle, titles, stats, avg
           <div className="space-y-3">
             {reviews.map((r) => (
               <div key={r.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex gap-3">
-                {r.images && r.images[0] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={r.images[0]}
-                    alt=""
-                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-lg bg-gray-100 flex-shrink-0 flex items-center justify-center text-2xl">
-                    🍜
-                  </div>
-                )}
+                <Link href={`/reviews/${r.id}`} className="flex-shrink-0">
+                  {r.images && r.images[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={r.images[0]}
+                      alt=""
+                      className="w-16 h-16 rounded-lg object-cover hover:opacity-80 transition-opacity"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-2xl hover:opacity-80 transition-opacity">
+                      🍜
+                    </div>
+                  )}
+                </Link>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-900 truncate">
-                    {r.stores?.name ?? "—"}
-                  </p>
+                  {r.store_id ? (
+                    <Link href={`/stores/${r.store_id}`} className="text-sm font-bold text-gray-900 truncate hover:underline block">
+                      {r.stores?.name ?? "—"}
+                    </Link>
+                  ) : (
+                    <p className="text-sm font-bold text-gray-900 truncate">{r.stores?.name ?? "—"}</p>
+                  )}
                   <div className="flex items-center gap-1 mt-0.5">
                     {[1, 2, 3, 4, 5].map((n) => (
                       <span key={n} className={`text-sm ${n <= r.rating ? "text-[#FFFF00]" : "text-gray-200"}`}>★</span>

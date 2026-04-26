@@ -27,7 +27,7 @@ export default async function MypagePage() {
   const { data: reviews } = await supabase
     .from("reviews")
     .select(
-      "id, rating, comment, images, created_at, stores(name), thickness_score, dero_score, vegetable_score, noodle_score, pork_score, emulsification_score"
+      "id, rating, comment, images, created_at, store_id, stores(name), thickness_score, dero_score, vegetable_score, noodle_score, pork_score, emulsification_score"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -100,6 +100,7 @@ export default async function MypagePage() {
     comment: r.comment ?? null,
     images: r.images ?? null,
     created_at: r.created_at,
+    store_id: r.store_id ?? null,
     stores: Array.isArray(r.stores) ? r.stores[0] ?? null : (r.stores as { name: string } | null),
   }));
 
