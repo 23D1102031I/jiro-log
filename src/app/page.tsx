@@ -164,7 +164,7 @@ export default async function Home() {
             <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent" />
 
             {/* テキスト（左寄り） */}
-            <div className="absolute inset-0 flex items-center px-6 md:px-12 lg:px-20">
+            <div className="absolute inset-0 flex items-end pb-10 px-6 md:px-12 lg:px-20">
               <div className="max-w-lg">
                 <div className="w-10 h-1 bg-[#FFFF00] mb-3 rounded-full" />
                 {heroReview && (
