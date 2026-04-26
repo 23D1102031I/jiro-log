@@ -235,22 +235,26 @@ export default async function Home() {
               </div>
             </div>
 
-            {/* 全店舗グリッド（8列） */}
-            <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-1.5">
+            {/* 全店舗グリッド（店舗名付き） */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
               {(allStores ?? []).map((store) => {
                 const visited = visitedStoreIds.has(store.id as string);
                 return (
                   <Link
                     key={store.id as string}
                     href={`/stores/${store.id}`}
-                    title={store.name as string}
-                    className={`aspect-square rounded-lg border-2 flex items-center justify-center text-lg transition-all hover:scale-110 ${
+                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all hover:opacity-80 ${
                       visited
-                        ? "bg-[#FFFF00] border-black"
-                        : "bg-gray-50 border-gray-200 opacity-50"
+                        ? "bg-[#FFFF00] border-black shadow-sm"
+                        : "bg-gray-50 border-gray-200 opacity-60"
                     }`}
                   >
-                    🍜
+                    <span className="text-xl">{visited ? "🍜" : "○"}</span>
+                    <p className={`text-[10px] font-bold text-center leading-tight line-clamp-2 ${
+                      visited ? "text-black" : "text-gray-400"
+                    }`}>
+                      {(store.name as string).replace("ラーメン二郎 ", "")}
+                    </p>
                   </Link>
                 );
               })}
