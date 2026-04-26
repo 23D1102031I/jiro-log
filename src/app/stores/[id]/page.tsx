@@ -8,6 +8,8 @@ import { WeeklyHoursPanel } from "@/components/stores/WeeklyHoursPanel";
 import type { WeeklyHours } from "@/components/stores/WeeklyHoursPanel";
 import { MenuSection } from "@/components/stores/MenuSection";
 import type { StoreMenu } from "@/components/stores/MenuSection";
+import { WaitTimeChart } from "@/components/stores/WaitTimeChart";
+import type { HourSlot, DayStats } from "@/components/stores/WaitTimeChart";
 import { MapPin, Clock, Star } from "lucide-react";
 
 const PARAM_LABELS = [
@@ -42,7 +44,7 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
 
   if (!store) notFound();
 
-  const [{ data: { user } }, { data: menuRow }, { data: reviews }] = await Promise.all([
+  const [{ data: { user } }, { data: menuRow }, { data: reviews }, { data: waitRows }] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("store_menus").select("ramen, toppings, updated_at").eq("store_id", id).maybeSingle(),
     supabase
@@ -53,7 +55,36 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
       .eq("store_id", id)
       .order("created_at", { ascending: false })
       .limit(20),
+    supabase
+      .from("reviews")
+      .select("arrived_at, wait_minutes, eaten_at")
+      .eq("store_id", id)
+      .not("arrived_at", "is", null)
+      .not("wait_minutes", "is", null),
   ]);
+
+  // 曜日×時間帯で平均待ち時間を集計
+  const buckets: Record<number, Record<number, number[]>> = {};
+  for (const r of waitRows ?? []) {
+    const date = new Date(r.eaten_at as string);
+    const dow = date.getDay(); // 0=日, 1=月, ..., 6=土
+    const hour = parseInt((r.arrived_at as string).slice(0, 2), 10);
+    if (!buckets[dow]) buckets[dow] = {};
+    if (!buckets[dow][hour]) buckets[dow][hour] = [];
+    buckets[dow][hour].push(r.wait_minutes as number);
+  }
+  const waitChartData: Record<number, DayStats> = {};
+  for (const [dowStr, hourMap] of Object.entries(buckets)) {
+    const dow = Number(dowStr);
+    const slots: HourSlot[] = Object.entries(hourMap)
+      .map(([h, waits]) => ({
+        hour: Number(h),
+        avgWait: waits.reduce((a, b) => a + b, 0) / waits.length,
+        count: waits.length,
+      }))
+      .sort((a, b) => a.hour - b.hour);
+    waitChartData[dow] = { slots, totalCount: slots.reduce((a, s) => a + s.count, 0) };
+  }
 
   const storeMenu: StoreMenu | null = menuRow
     ? { ramen: (menuRow.ramen as StoreMenu["ramen"]) ?? [], toppings: (menuRow.toppings as StoreMenu["toppings"]) ?? [] }
@@ -186,7 +217,16 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
           />
         </section>
 
-        {/* ③ 中部セクション（店舗の特徴: RadarChart + パラメータバー） */}
+        {/* ③ 混雑時間帯チャート */}
+        <section className="mb-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="text-sm font-black text-gray-800 mb-5 flex items-center gap-2">
+            <span className="w-1 h-4 bg-[#FFFF00] inline-block" />
+            時間帯別 平均待ち時間
+          </h2>
+          <WaitTimeChart data={waitChartData} />
+        </section>
+
+        {/* ④ 中部セクション（店舗の特徴: RadarChart + パラメータバー） */}
         <section className="mb-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="text-sm font-black text-gray-800 mb-5 flex items-center gap-2">
             <span className="w-1 h-4 bg-[#FFFF00] inline-block" />
