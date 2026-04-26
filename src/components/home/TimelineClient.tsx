@@ -175,21 +175,21 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
           </Link>
         )}
 
-        {/* ミニパラメータ（sm以上で表示・3列グリッド） */}
-        <div className="hidden sm:grid grid-cols-3 gap-x-3 gap-y-1.5 mt-1">
+        {/* ミニパラメータ（sm以上で表示・2列グリッド・ドット位置表示） */}
+        <div className="hidden sm:grid grid-cols-2 gap-x-4 gap-y-2 mt-1">
           {miniParams.map(({ label, value }) => {
             const v = Math.max(1, Math.min(5, value ?? 1));
+            const pct = ((v - 1) / 4) * 100;
             return (
-              <div key={label} className="flex items-center gap-1.5">
-                <span className="text-[10px] text-gray-400 w-9 shrink-0 truncate">{label}</span>
-                <div className="flex gap-0.5">
-                  {[1,2,3,4,5].map((n) => (
-                    <span
-                      key={n}
-                      className={`w-2 h-2 rounded-sm ${n <= v ? "bg-[#FFFF00]" : "bg-gray-200"}`}
-                    />
-                  ))}
+              <div key={label} className="flex items-center gap-2">
+                <span className="text-[11px] text-gray-500 w-10 shrink-0">{label}</span>
+                <div className="relative flex-1 h-0.5 bg-gray-200 my-2">
+                  <div
+                    className="absolute w-3 h-3 bg-[#FFFF00] rounded-full border border-gray-400 -top-[5px] -translate-x-1/2 shadow"
+                    style={{ left: `${pct}%` }}
+                  />
                 </div>
+                <span className="text-[11px] font-bold text-gray-700 w-3 text-right">{v}</span>
               </div>
             );
           })}
