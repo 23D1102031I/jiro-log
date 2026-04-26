@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
 type DayHours = {
   open: string;
@@ -19,89 +19,87 @@ export type WeeklyHours = {
   irregular: boolean;
 };
 
-const DAY_LABELS: { key: keyof Omit<WeeklyHours, "irregular">; label: string }[] = [
-  { key: "mon", label: "月" },
-  { key: "tue", label: "火" },
-  { key: "wed", label: "水" },
-  { key: "thu", label: "木" },
-  { key: "fri", label: "金" },
-  { key: "sat", label: "土" },
-  { key: "sun", label: "日" },
-];
+const DAY_JP: Record<DayKey, string> = {
+  mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土", sun: "日",
+};
+const DAY_ORDER: DayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
-function getTodayKey(): keyof Omit<WeeklyHours, "irregular"> {
-  const now = new Date();
-  const jstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const dayIndex = jstDate.getUTCDay(); // 0=Sun, 1=Mon, ...
-  const keys: (keyof Omit<WeeklyHours, "irregular">)[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-  return keys[dayIndex];
+interface DayGroup {
+  days: DayKey[];
+  hours: DayHours;
 }
 
-export function WeeklyHoursPanel({ weeklyHours }: { weeklyHours: WeeklyHours }) {
-  const todayKey = getTodayKey();
-  const [activeKey, setActiveKey] = useState<keyof Omit<WeeklyHours, "irregular">>(todayKey);
+function groupByHours(w: WeeklyHours): DayGroup[] {
+  const groups: DayGroup[] = [];
+  for (const key of DAY_ORDER) {
+    const hours = w[key];
+    const sig = JSON.stringify(hours);
+    const existing = groups.find((g) => JSON.stringify(g.hours) === sig);
+    if (existing) {
+      existing.days.push(key);
+    } else {
+      groups.push({ days: [key], hours });
+    }
+  }
+  return groups;
+}
 
-  const hours = weeklyHours[activeKey];
+function getTodayKey(): DayKey {
+  const now = new Date();
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const keys: DayKey[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  return keys[jst.getUTCDay()];
+}
+
+function formatHours(hours: NonNullable<DayHours>): string {
+  if (hours.dinner) {
+    return `${hours.open} - ${hours.close} / ${hours.dinner.open} - ${hours.dinner.close}`;
+  }
+  return `${hours.open} - ${hours.close}`;
+}
+
+interface Props {
+  weeklyHours: WeeklyHours;
+  closedDays?: string | null;
+}
+
+export function WeeklyHoursPanel({ weeklyHours, closedDays }: Props) {
+  const groups = groupByHours(weeklyHours);
+  const todayKey = getTodayKey();
+  const hasHoliday = closedDays ? /祝/.test(closedDays) : false;
 
   return (
-    <div>
+    <div className="space-y-2">
       {weeklyHours.irregular && (
-        <div className="mb-3 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-xs text-orange-700 font-medium">
+        <div className="px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-xs text-orange-700 font-medium">
           ⚠️ 不定休あり — SNS等で最新情報をご確認ください
         </div>
       )}
 
-      {/* 曜日タブ */}
-      <div className="flex gap-1 mb-3">
-        {DAY_LABELS.map(({ key, label }) => {
-          const isToday = key === todayKey;
-          const isActive = key === activeKey;
-          const closed = weeklyHours[key] === null;
-          return (
-            <button
-              key={key}
-              onClick={() => setActiveKey(key)}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all leading-none ${
-                isActive
-                  ? "bg-[#FFFF00] text-black border-2 border-black"
-                  : isToday
-                  ? "bg-yellow-50 text-black border-2 border-[#FFFF00]"
-                  : closed
-                  ? "bg-gray-50 text-gray-300 border border-gray-100"
-                  : "bg-white text-gray-700 border border-gray-200 hover:border-gray-400"
-              }`}
-            >
-              <span className="block">{label}</span>
-              {isToday && <span className="block text-[9px] font-normal opacity-60 mt-0.5">今日</span>}
-            </button>
-          );
-        })}
-      </div>
+      {groups.map((group, i) => {
+        const isClosed = group.hours === null;
+        const isToday = group.days.includes(todayKey);
 
-      {/* 時間表示 */}
-      {hours === null ? (
-        <div className="py-3 text-center text-sm text-gray-400 bg-gray-50 rounded-lg">定休日</div>
-      ) : (
-        <div className="space-y-2 px-1">
-          {hours.dinner ? (
-            <>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-xs text-gray-400 w-14">ランチ</span>
-                <span className="font-bold text-gray-900">{hours.open} 〜 {hours.close}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-xs text-gray-400 w-14">ディナー</span>
-                <span className="font-bold text-gray-900">{hours.dinner.open} 〜 {hours.dinner.close}</span>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-xs text-gray-400 w-14">営業時間</span>
-              <span className="font-bold text-gray-900">{hours.open} 〜 {hours.close}</span>
+        // 曜日ラベル: "月・火・水・木・金・土" 形式
+        let dayLabel = group.days.map((d) => DAY_JP[d]).join("・");
+        // 定休日グループに祝日を付加
+        if (isClosed && hasHoliday) dayLabel += "・祝日";
+
+        return (
+          <div key={i} className="flex gap-3 items-start text-sm">
+            {/* 今日インジケーター */}
+            <div className={`w-1 rounded-full mt-0.5 self-stretch flex-shrink-0 ${isToday ? "bg-[#FFFF00]" : "bg-transparent"}`} />
+            <div className="flex-1">
+              <p className={`font-bold leading-tight ${isClosed ? "text-gray-400" : isToday ? "text-black" : "text-gray-700"}`}>
+                {dayLabel}
+              </p>
+              <p className={`mt-0.5 ${isClosed ? "text-gray-400" : "text-gray-900 font-medium"}`}>
+                {isClosed ? "定休日" : formatHours(group.hours!)}
+              </p>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        );
+      })}
     </div>
   );
 }

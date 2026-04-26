@@ -121,7 +121,10 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
                   <span className="font-medium">営業時間</span>
                 </div>
                 {store.weekly_hours ? (
-                  <WeeklyHoursPanel weeklyHours={store.weekly_hours as WeeklyHours} />
+                  <WeeklyHoursPanel
+                    weeklyHours={store.weekly_hours as WeeklyHours}
+                    closedDays={store.closed_days as string | null}
+                  />
                 ) : store.closed_days ? (
                   <p className="text-sm text-gray-500">定休日: {store.closed_days}</p>
                 ) : null}
