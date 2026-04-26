@@ -39,6 +39,8 @@ export function ReviewForm({ stores }: { stores: Store[] }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [params, setParams] = useState<ParamValues>(DEFAULT_PARAMS);
+  const [arrivedAt, setArrivedAt] = useState<string>("");
+  const [waitMinutes, setWaitMinutes] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [titleQueue, setTitleQueue] = useState<AwardedTitle[]>([]);
@@ -89,6 +91,8 @@ export function ReviewForm({ stores }: { stores: Store[] }) {
         comment: comment.trim() || null,
         images: imageUrls,
         eaten_at: eatenAt,
+        arrived_at: arrivedAt || null,
+        wait_minutes: waitMinutes !== "" ? Number(waitMinutes) : null,
         ...params,
       });
       if (insertErr) throw insertErr;
@@ -128,7 +132,7 @@ export function ReviewForm({ stores }: { stores: Store[] }) {
   return (
     <>
       <form onSubmit={handleSubmit}>
-        {/* 店舗選択 + 日付 */}
+        {/* 店舗選択 + 日付 + 到着時間 + 並び時間 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <section>
             <h2 className="text-sm font-black text-gray-800 mb-2 flex items-center gap-2">
@@ -168,6 +172,40 @@ export function ReviewForm({ stores }: { stores: Store[] }) {
               className="border border-gray-200 rounded-xl px-4 py-3.5 w-full text-sm focus:outline-none focus:ring-2 focus:ring-[#FFFF00] focus:border-transparent"
             />
           </section>
+
+          <section>
+            <h2 className="text-sm font-black text-gray-800 mb-2 flex items-center gap-2">
+              <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">3</span>
+              店舗到着時間
+              <span className="text-xs text-gray-400 font-normal">(任意)</span>
+            </h2>
+            <input
+              type="time"
+              value={arrivedAt}
+              onChange={(e) => setArrivedAt(e.target.value)}
+              className="border border-gray-200 rounded-xl px-4 py-3.5 w-full text-sm focus:outline-none focus:ring-2 focus:ring-[#FFFF00] focus:border-transparent"
+            />
+          </section>
+
+          <section>
+            <h2 className="text-sm font-black text-gray-800 mb-2 flex items-center gap-2">
+              <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">4</span>
+              並んだ時間
+              <span className="text-xs text-gray-400 font-normal">(任意)</span>
+            </h2>
+            <div className="relative">
+              <input
+                type="number"
+                min={0}
+                max={999}
+                value={waitMinutes}
+                onChange={(e) => setWaitMinutes(e.target.value)}
+                placeholder="0"
+                className="border border-gray-200 rounded-xl px-4 py-3.5 pr-10 w-full text-sm focus:outline-none focus:ring-2 focus:ring-[#FFFF00] focus:border-transparent"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">分</span>
+            </div>
+          </section>
         </div>
 
         {/* 2カラムメインエリア */}
@@ -178,7 +216,7 @@ export function ReviewForm({ stores }: { stores: Store[] }) {
             {/* 画像 */}
             <section>
               <h2 className="text-sm font-black text-gray-800 mb-3 flex items-center gap-2">
-                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">3</span>
+                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">5</span>
                 ラーメン画像
                 <span className="text-xs text-gray-400 font-normal">(任意)</span>
               </h2>
@@ -188,7 +226,7 @@ export function ReviewForm({ stores }: { stores: Store[] }) {
             {/* コール */}
             <section>
               <h2 className="text-sm font-black text-gray-800 mb-3 flex items-center gap-2">
-                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">4</span>
+                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">6</span>
                 コール
                 <span className="text-xs text-gray-400 font-normal">(呪文)</span>
               </h2>
@@ -200,7 +238,7 @@ export function ReviewForm({ stores }: { stores: Store[] }) {
             {/* 総合評価 */}
             <section>
               <h2 className="text-sm font-black text-gray-800 mb-3 flex items-center gap-2">
-                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">5</span>
+                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">7</span>
                 総合評価
                 <span className="text-xs text-red-500 font-normal">必須</span>
               </h2>
@@ -210,7 +248,7 @@ export function ReviewForm({ stores }: { stores: Store[] }) {
             {/* コメント */}
             <section>
               <h2 className="text-sm font-black text-gray-800 mb-3 flex items-center gap-2">
-                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">6</span>
+                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">8</span>
                 コメント
                 <span className="text-xs text-gray-400 font-normal">(任意)</span>
               </h2>
@@ -232,7 +270,7 @@ export function ReviewForm({ stores }: { stores: Store[] }) {
           <div>
             <section>
               <h2 className="text-sm font-black text-gray-800 mb-3 flex items-center gap-2">
-                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">7</span>
+                <span className="w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">9</span>
                 ジロリアンパラメータ
                 <span className="text-xs text-gray-400 font-normal">(各1〜5段階評価)</span>
               </h2>
