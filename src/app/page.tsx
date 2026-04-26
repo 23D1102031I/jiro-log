@@ -219,12 +219,6 @@ export default async function Home() {
               </div>
             </div>
 
-            {/* ドットインジケーター（下中央） */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#FFFF00]" />
-              <span className="w-2 h-2 rounded-full bg-white/40" />
-              <span className="w-2 h-2 rounded-full bg-white/40" />
-            </div>
           </div>
         </section>
 
