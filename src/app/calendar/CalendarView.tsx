@@ -530,7 +530,7 @@ export function CalendarView({ userId, isOwner }: Props) {
 
       {/* ③ 選択日レビューパネル（全幅・横スクロール） */}
       {selectedDate && (
-        <div className="mt-6">
+        <div className="mt-6 w-full overflow-x-clip">
           <div className="flex items-center justify-between mb-3">
             <div>
               <span className="font-black text-base text-gray-900">{selectedDate.replace(/-/g, "/")}</span>
