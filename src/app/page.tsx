@@ -68,14 +68,15 @@ export default async function Home() {
     .order("created_at", { ascending: false })
     .limit(5);
 
-  // ヒーロー用：画像ありのレビューから最新1件
-  const { data: rawHeroReview } = await supabase
+  // ヒーロー用：最新20件取得してサーバー側で画像ありのものを選択
+  const { data: rawHeroReviews } = await supabase
     .from("reviews")
     .select(`id, rating, images, store_id, stores(name, region)`)
-    .not("images", "is", null)
     .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+    .limit(20);
+  const rawHeroReview = (rawHeroReviews ?? []).find(
+    (r) => Array.isArray(r.images) && (r.images as string[]).length > 0
+  ) ?? null;
 
   const reviews: Review[] = (rawReviews ?? []).map((r) => ({
     id: r.id as string,
