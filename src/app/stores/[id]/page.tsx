@@ -186,11 +186,11 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
           />
         </section>
 
-        {/* ③ 中部セクション（My Jiro Identity: RadarChart + パラメータバー） */}
+        {/* ③ 中部セクション（店舗の特徴: RadarChart + パラメータバー） */}
         <section className="mb-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="text-sm font-black text-gray-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+          <h2 className="text-sm font-black text-gray-800 mb-5 flex items-center gap-2">
             <span className="w-1 h-4 bg-[#FFFF00] inline-block" />
-            My Jiro Identity
+            店舗の特徴
             {totalReviews > 0 && <span className="text-gray-400 font-normal normal-case ml-1">（{totalReviews}件の平均）</span>}
           </h2>
 
