@@ -55,6 +55,9 @@ export function Footer() {
             <Link href="/privacy" className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
               プライバシーポリシー
             </Link>
+            <Link href="/contact" className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
+              お問い合わせ
+            </Link>
           </div>
           <p className="text-xs text-gray-600 mt-3">
             © 2026 Jiro Log. All rights reserved.
