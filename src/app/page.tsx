@@ -336,19 +336,8 @@ export default async function Home() {
                   店舗マップ
                 </h3>
               </div>
-              <div className="relative h-40 bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
-                <div className="absolute inset-0 opacity-10" style={{
-                  backgroundImage: `
-                    repeating-linear-gradient(0deg, #666, #666 1px, transparent 1px, transparent 30px),
-                    repeating-linear-gradient(90deg, #666, #666 1px, transparent 1px, transparent 30px)
-                  `
-                }} />
-                <div className="text-center z-10">
-                  <div className="flex items-center gap-2 justify-center mb-2 text-3xl">
-                    <span>📍</span><span>📍</span><span>📍</span>
-                  </div>
-                  <p className="text-gray-700 text-xs font-bold">全国{totalStores}店舗</p>
-                </div>
+              <div className="relative h-40 bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+                <p className="text-white/40 text-sm font-bold">全国{totalStores}店舗</p>
               </div>
               <div className="p-3">
                 <Link
