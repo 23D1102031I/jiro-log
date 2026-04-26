@@ -12,7 +12,7 @@ export function RadarChart({ values, size = 220 }: Props) {
   const cx = size / 2;
   const cy = size / 2;
   const r = size * 0.36;
-  const labelR = r + size * 0.16;
+  const labelR = r + size * 0.08;
 
   function polar(index: number, radius: number): [number, number] {
     const angle = (Math.PI * 2 * index) / N - Math.PI / 2;
