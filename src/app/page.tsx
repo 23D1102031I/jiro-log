@@ -168,10 +168,9 @@ export default async function Home() {
               <div className="max-w-lg">
                 <div className="w-10 h-1 bg-[#FFFF00] mb-3 rounded-full" />
                 {heroReview && (
-                  <p className="text-gray-200 text-sm mb-2">
+                  <p className="text-white font-black text-2xl md:text-4xl mb-2 leading-tight drop-shadow">
                     {heroReview.stores?.name ?? ""}
-                    {" "}
-                    <span className="text-[#FFFF00] font-bold">★{Number(heroReview.rating).toFixed(1)}</span>
+                    <span className="text-[#FFFF00] text-lg md:text-2xl ml-3">★{Number(heroReview.rating).toFixed(1)}</span>
                   </p>
                 )}
                 <Link
