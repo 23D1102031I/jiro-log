@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Heart, Share2, Trash2 } from "lucide-react";
+import { Heart, Share2, Trash2, Link2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -23,6 +23,13 @@ export function ReviewDetailActions({ reviewId, userId, reviewOwnerId, shareUrl,
   const [likeLoading, setLikeLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const isOwner = !!userId && userId === reviewOwnerId;
 
@@ -109,6 +116,14 @@ export function ReviewDetailActions({ reviewId, userId, reviewOwnerId, shareUrl,
             <Share2 className="w-4 h-4" />
             Xでシェア
           </a>
+
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center gap-2 flex-1 justify-center py-3 bg-white border-2 border-gray-200 text-gray-700 font-bold text-sm rounded-xl hover:border-gray-400 transition-colors"
+          >
+            <Link2 className="w-4 h-4" />
+            {copied ? "コピーしました！" : "リンクをコピー"}
+          </button>
         </div>
 
         {isOwner && (
