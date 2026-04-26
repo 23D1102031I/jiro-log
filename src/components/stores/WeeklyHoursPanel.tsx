@@ -95,10 +95,10 @@ export function WeeklyHoursPanel({ weeklyHours, closedDays }: Props) {
             {/* 今日インジケーター */}
             <div className={`w-1 rounded-full mt-0.5 self-stretch flex-shrink-0 ${isToday ? "bg-[#FFFF00]" : "bg-transparent"}`} />
             <div className="flex-1">
-              <p className={`font-bold leading-tight ${isClosed ? "text-gray-400" : isToday ? "text-black" : "text-gray-700"}`}>
+              <p className={`font-bold leading-tight ${isToday ? "text-black" : "text-gray-700"}`}>
                 {dayLabel}
               </p>
-              <p className={`mt-0.5 ${isClosed ? "text-gray-400" : "text-gray-900 font-medium"}`}>
+              <p className={`mt-0.5 ${isClosed ? "text-gray-600" : "text-gray-600 font-medium"}`}>
                 {isClosed ? "定休日" : formatHours(group.hours!)}
               </p>
             </div>
