@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { Search, MapPin, ExternalLink } from "lucide-react";
 import { BusinessStatusBadge } from "./BusinessStatusBadge";
 import type { BusinessHours } from "./BusinessStatusBadge";
@@ -86,16 +87,22 @@ export function StorePanel({ stores, selectedStoreId, onSelect }: Props) {
           </div>
         ) : (
           filtered.map((store) => (
-            <button
+            <div
               key={store.id}
               onClick={() => onSelect(store.id)}
-              className={`w-full text-left px-4 py-3.5 transition-colors hover:bg-yellow-50 ${
+              className={`w-full px-4 py-3.5 transition-colors hover:bg-yellow-50 cursor-pointer ${
                 selectedStoreId === store.id ? "bg-[#FFFF00]/20 border-l-4 border-[#FFFF00]" : ""
               }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-900 leading-tight truncate">{store.name}</p>
+                  <Link
+                    href={`/stores/${store.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-sm font-bold text-gray-900 leading-tight hover:underline truncate block"
+                  >
+                    {store.name}
+                  </Link>
                   <p className="text-xs text-gray-500 mt-0.5 truncate">{store.address}</p>
                   <div className="flex items-center gap-2 mt-1.5">
                     <BusinessStatusBadge businessHours={store.business_hours} />
@@ -114,7 +121,7 @@ export function StorePanel({ stores, selectedStoreId, onSelect }: Props) {
                   </a>
                 )}
               </div>
-            </button>
+            </div>
           ))
         )}
       </div>

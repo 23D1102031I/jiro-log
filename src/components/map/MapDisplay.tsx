@@ -69,7 +69,7 @@ export function MapDisplay({ stores, selectedStoreId, onStoreSelect, visitedStor
           .addTo(map)
           .bindPopup(
             `<div style="min-width:200px;font-family:'Noto Sans JP',sans-serif">
-              <div style="font-weight:700;font-size:13px;margin-bottom:4px;line-height:1.4">${store.name}</div>
+              <a href="/stores/${store.id}" style="font-weight:700;font-size:13px;margin-bottom:4px;line-height:1.4;color:#000;text-decoration:underline;display:block">${store.name}</a>
               <div style="font-size:11px;color:#666;margin-bottom:6px">${store.address}</div>
               ${store.closed_days ? `<div style="font-size:11px;color:#888">定休日: ${store.closed_days}</div>` : ""}
             </div>`,
