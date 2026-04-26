@@ -178,7 +178,7 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
                   {[1,2,3,4,5].map(n => (
                     <Star key={n} className={`w-5 h-5 ${n <= Math.round(avgRating) ? "fill-[#FFFF00] text-[#FFFF00]" : "text-gray-200"}`} />
                   ))}
-                  <span className="text-xl font-black ml-1">{avgRating > 0 ? avgRating.toFixed(1) : "—"}</span>
+                  <span className="text-xl font-black ml-1">{avgRating > 0 ? avgRating.toFixed(2) : "—"}</span>
                 </div>
               </div>
 
