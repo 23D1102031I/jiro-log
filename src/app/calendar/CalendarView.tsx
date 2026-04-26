@@ -347,7 +347,7 @@ export function CalendarView({ userId, isOwner }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
 
         {/* ─ 左: カレンダー ─ */}
-        <div>
+        <div className="min-w-0">
           {/* 月ナビ */}
           <div className="flex items-center gap-2 mb-5">
             <button onClick={goToPrev} className="p-2 rounded-xl hover:bg-gray-100 transition-colors" aria-label="前月">

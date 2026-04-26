@@ -208,7 +208,7 @@ export function UserProfileClient({
       {/* ══════════════════════════════════════════
           RIGHT COLUMN — scrollable content
       ══════════════════════════════════════════ */}
-      <div className="space-y-8">
+      <div className="space-y-8 min-w-0">
 
         {/* ① My Jiro Identity */}
         <section>
