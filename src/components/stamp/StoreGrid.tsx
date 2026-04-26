@@ -60,7 +60,7 @@ export function StoreGrid({ stores, visitedStoreIds }: Props) {
               {region}（{regionStores.filter((s) => visitedStoreIds.has(s.id)).length}/{regionStores.length}）
               <span className="h-px flex-1 bg-gray-100" />
             </h3>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {regionStores.map((store) => {
                 const visited = visitedStoreIds.has(store.id);
                 return (
