@@ -113,38 +113,35 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
   ];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex">
+    <div className="relative bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex">
+      <Link href={`/reviews/${review.id}`} className="absolute inset-0 z-0" aria-label="レビュー詳細" />
+
       {/* 左: 大きめ正方形サムネイル */}
-      <Link href={`/reviews/${review.id}`} className="relative flex-shrink-0 w-36 sm:w-44 bg-gray-100">
+      <div className="relative flex-shrink-0 w-36 sm:w-44 bg-gray-100 pointer-events-none">
         {review.images?.[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={review.images[0]}
-            alt=""
-            className="w-full h-full object-cover"
-            style={{ minHeight: "144px" }}
-          />
+          <img src={review.images[0]} alt="" className="w-full h-full object-cover" style={{ minHeight: "144px" }} />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl" style={{ minHeight: "144px" }}>🍜</div>
         )}
-      </Link>
+      </div>
 
       {/* 右: コンテンツ */}
-      <div className="flex-1 p-3 sm:p-4 min-w-0 flex flex-col gap-1.5">
+      <div className="flex-1 p-3 sm:p-4 min-w-0 flex flex-col gap-1.5 relative z-10">
         {/* 店舗名 + 評価 */}
         <div className="flex items-start justify-between gap-2">
           <Link
             href={`/stores/${review.store_id}`}
-            className="font-black text-sm sm:text-base text-gray-900 hover:underline leading-tight"
+            className="font-black text-sm sm:text-base text-gray-900 hover:underline leading-tight relative z-20"
           >
             {review.stores?.name ?? "—"}
           </Link>
-          <Link href={`/reviews/${review.id}`} className="flex items-center gap-0.5 flex-shrink-0">
+          <div className="flex items-center gap-0.5 flex-shrink-0">
             {[1, 2, 3, 4, 5].map((n) => (
               <Star key={n} className={`w-3.5 h-3.5 ${n <= review.rating ? "fill-[#FFFF00] text-[#FFFF00]" : "text-gray-200"}`} />
             ))}
             <span className="text-sm font-black ml-1 text-gray-800">{Number(review.rating).toFixed(1)}</span>
-          </Link>
+          </div>
         </div>
 
         {/* コール（全項目表示） */}
@@ -155,9 +152,7 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
               <span
                 key={label}
                 className={`px-1.5 py-0.5 text-[10px] font-bold rounded border ${
-                  isHigh
-                    ? "bg-[#FFFF00] text-black border-black"
-                    : "bg-white text-gray-400 border-gray-200"
+                  isHigh ? "bg-[#FFFF00] text-black border-black" : "bg-white text-gray-400 border-gray-200"
                 }`}
               >
                 {label}: {value ?? "標準"}
@@ -168,11 +163,9 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
 
         {/* コメントプレビュー */}
         {review.comment && (
-          <Link href={`/reviews/${review.id}`} className="block">
-            <div className="bg-gray-50 rounded-lg px-2.5 py-2 border-l-2 border-[#FFFF00] hover:bg-gray-100 transition-colors">
-              <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">{review.comment}</p>
-            </div>
-          </Link>
+          <div className="bg-gray-50 rounded-lg px-2.5 py-2 border-l-2 border-[#FFFF00]">
+            <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">{review.comment}</p>
+          </div>
         )}
 
         {/* ミニパラメータ（sm以上で表示・2列グリッド・ドット位置表示） */}
@@ -198,7 +191,7 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
         {/* フッター */}
         <div className="flex items-center justify-between mt-auto pt-1.5 border-t border-gray-50">
           {review.user_id ? (
-            <Link href={`/users/${review.user_id}`} className="flex items-center gap-1.5 hover:opacity-80">
+            <Link href={`/users/${review.user_id}`} className="flex items-center gap-1.5 hover:opacity-80 relative z-20">
               {review.users?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={review.users.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" />
@@ -212,7 +205,7 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
           ) : (
             <span className="text-xs text-gray-400">@{review.users?.username ?? "—"}</span>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative z-20">
             <LikeButton reviewId={review.id} userId={userId} />
             <span className="text-xs text-gray-300">
               {new Date(review.created_at).toLocaleDateString("ja-JP")}
