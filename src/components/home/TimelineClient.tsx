@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { Heart, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -37,7 +37,8 @@ interface Props {
   currentUserId: string | null;
 }
 
-const PAGE_SIZE = 20;
+const INITIAL_SIZE = 5;
+const PAGE_SIZE = 15;
 
 function LikeButton({ reviewId, userId }: { reviewId: string; userId: string | null }) {
   const [liked, setLiked] = useState(false);
@@ -175,20 +176,20 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
         )}
 
         {/* ミニパラメータ（sm以上で表示・2列グリッド・ドット位置表示） */}
-        <div className="hidden sm:grid grid-cols-2 gap-x-3 gap-y-1.5 mt-0.5">
+        <div className="hidden sm:grid grid-cols-2 gap-x-4 gap-y-2 mt-1">
           {miniParams.map(({ label, value }) => {
             const v = Math.max(1, Math.min(5, value ?? 1));
             const pct = ((v - 1) / 4) * 100;
             return (
-              <div key={label} className="flex items-center gap-1.5">
-                <span className="text-[9px] text-gray-400 w-8 shrink-0">{label}</span>
-                <div className="relative flex-1 h-px bg-gray-200 my-1.5">
+              <div key={label} className="flex items-center gap-2">
+                <span className="text-[11px] text-gray-500 w-10 shrink-0">{label}</span>
+                <div className="relative flex-1 h-0.5 bg-gray-200 my-2">
                   <div
-                    className="absolute w-2.5 h-2.5 bg-[#FFFF00] rounded-full border border-gray-300 -top-[4px] -translate-x-1/2 shadow-sm"
+                    className="absolute w-3 h-3 bg-[#FFFF00] rounded-full border border-gray-400 -top-[5px] -translate-x-1/2 shadow"
                     style={{ left: `${pct}%` }}
                   />
                 </div>
-                <span className="text-[9px] font-bold text-gray-500 w-2.5 text-right">{v}</span>
+                <span className="text-[11px] font-bold text-gray-700 w-3 text-right">{v}</span>
               </div>
             );
           })}
@@ -226,10 +227,9 @@ function ReviewCard({ review, userId }: { review: TimelineReview; userId: string
 export function TimelineClient({ initialReviews, currentUserId }: Props) {
   const [activeTab, setActiveTab] = useState<"all" | "following">("all");
   const [reviews, setReviews] = useState<TimelineReview[]>(initialReviews);
-  const [hasMore, setHasMore] = useState(initialReviews.length === PAGE_SIZE);
+  const [hasMore, setHasMore] = useState(initialReviews.length >= INITIAL_SIZE);
   const [loading, setLoading] = useState(false);
   const [emptyFollowing, setEmptyFollowing] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef(initialReviews.length);
 
   const mapReview = (r: Record<string, unknown>): TimelineReview => ({
@@ -311,7 +311,7 @@ export function TimelineClient({ initialReviews, currentUserId }: Props) {
       .from("reviews")
       .select(SELECT_FIELDS)
       .order("created_at", { ascending: false })
-      .range(0, PAGE_SIZE - 1);
+      .range(0, INITIAL_SIZE - 1);
 
     if (tab === "following" && currentUserId) {
       const { data: followsData } = await supabase
@@ -335,22 +335,11 @@ export function TimelineClient({ initialReviews, currentUserId }: Props) {
       const mapped = data.map((r) => mapReview(r as Record<string, unknown>));
       setReviews(mapped);
       offsetRef.current = mapped.length;
-      if (mapped.length < PAGE_SIZE) setHasMore(false);
+      if (mapped.length < INITIAL_SIZE) setHasMore(false);
     }
     setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, currentUserId]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      (entries) => { if (entries[0].isIntersecting) loadMore(); },
-      { rootMargin: "200px" }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [loadMore]);
 
   return (
     <>
@@ -413,15 +402,24 @@ export function TimelineClient({ initialReviews, currentUserId }: Props) {
         </div>
       )}
 
-      {/* Sentinel + loading */}
-      <div ref={sentinelRef} className="h-4 mt-4" />
-      {loading && (
-        <div className="flex justify-center py-6">
-          <div className="w-8 h-8 border-4 border-[#FFFF00] border-t-transparent rounded-full animate-spin" />
+      {/* もっと見るボタン */}
+      {hasMore && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={loadMore}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-8 py-3 border-2 border-black text-black font-bold text-sm rounded-xl hover:bg-black hover:text-[#FFFF00] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <><span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />読み込み中…</>
+            ) : (
+              <>もっと見る（+{PAGE_SIZE}件）</>
+            )}
+          </button>
         </div>
       )}
-      {!hasMore && reviews.length >= PAGE_SIZE && (
-        <p className="text-center text-xs text-gray-400 py-4">すべてのレビューを表示しました</p>
+      {!hasMore && reviews.length > INITIAL_SIZE && (
+        <p className="text-center text-xs text-gray-400 py-4 mt-2">すべてのレビューを表示しました</p>
       )}
     </>
   );
