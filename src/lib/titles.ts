@@ -5,6 +5,14 @@ export interface AwardedTitle {
   description: string;
 }
 
+type TitleDef = {
+  id: string;
+  name: string;
+  description: string;
+  condition_type: string;
+  condition_value: Record<string, unknown>;
+};
+
 type CallKey = "call_garlic" | "call_yasai" | "call_abura" | "call_karame";
 
 const KANTO_REGIONS = new Set(["23区", "多摩", "神奈川", "千葉", "埼玉"]);
@@ -18,49 +26,20 @@ function dayKey(jst: Date): string {
   return `${jst.getFullYear()}-${jst.getMonth()}-${jst.getDate()}`;
 }
 
-export async function evaluateAndAwardTitles(userId: string): Promise<AwardedTitle[]> {
-  const supabase = createClient();
+type ReviewRow = {
+  id: string;
+  store_id: string;
+  created_at: string;
+  call_garlic: string | null;
+  call_yasai: string | null;
+  call_abura: string | null;
+  call_karame: string | null;
+  pork_score: number | null;
+  dero_score: number | null;
+  emulsification_score: number | null;
+};
 
-  // Fetch all user reviews
-  const { data: reviews } = await supabase
-    .from("reviews")
-    .select(
-      "id, store_id, created_at, call_garlic, call_yasai, call_abura, call_karame, pork_score, dero_score, emulsification_score"
-    )
-    .eq("user_id", userId);
-
-  if (!reviews || reviews.length === 0) return [];
-
-  // Fetch all stores (to resolve regions for area titles)
-  const { data: stores } = await supabase
-    .from("stores")
-    .select("id, name, region");
-
-  const storeMap = new Map(
-    (stores ?? []).map((s) => [s.id, { name: s.name, region: s.region }])
-  );
-
-  // Fetch already owned title names
-  const { data: ownedRaw } = await supabase
-    .from("user_titles")
-    .select("title_id, titles(name)")
-    .eq("user_id", userId);
-
-  const ownedNames = new Set(
-    (ownedRaw ?? []).map((ut) => {
-      const t = Array.isArray(ut.titles) ? ut.titles[0] : ut.titles;
-      return (t as { name: string } | null)?.name ?? "";
-    })
-  );
-
-  // Fetch all title definitions
-  const { data: allTitles } = await supabase
-    .from("titles")
-    .select("id, name, description, condition_type, condition_value");
-
-  if (!allTitles) return [];
-
-  // --- Pre-compute stats ---
+function computeStats(reviews: ReviewRow[], storeMap: Map<string, { name: string; region: string }>) {
   const total = reviews.length;
   const visitedStoreIds = new Set(reviews.map((r) => r.store_id));
 
@@ -127,99 +106,166 @@ export async function evaluateAndAwardTitles(userId: string): Promise<AwardedTit
   const allStoreIds = new Set(storeMap.keys());
   const visitedAll = allStoreIds.size > 0 && [...allStoreIds].every((id) => visitedStoreIds.has(id));
 
-  // --- Evaluate each title ---
-  const newlyAchieved: typeof allTitles = [];
+  return {
+    total, visitedStoreIds, reviewsByDay, maxConsecutive,
+    highCall, porkFiveCount, deroAvg, emulAvg, winterReviews,
+    outsideKantoStores, visitedInRegion, visitedMita, visitedAll,
+  };
+}
 
-  for (const title of allTitles) {
-    if (ownedNames.has(title.name)) continue;
+function evaluateTitle(title: TitleDef, stats: ReturnType<typeof computeStats>): boolean {
+  const cv = title.condition_value;
+  const {
+    total, visitedStoreIds, reviewsByDay, maxConsecutive,
+    highCall, porkFiveCount, deroAvg, emulAvg, winterReviews,
+    outsideKantoStores, visitedInRegion, visitedMita, visitedAll,
+  } = stats;
 
-    const cv = title.condition_value as Record<string, unknown>;
-    let achieved = false;
+  switch (title.condition_type) {
+    case "count":
+      return total >= (cv.min as number);
 
-    switch (title.condition_type) {
-      case "count":
-        achieved = total >= (cv.min as number);
-        break;
-
-      case "area": {
-        const t = cv.type as string | undefined;
-        if (t === "store_count") {
-          achieved = visitedStoreIds.size >= (cv.min as number);
-        } else if (t === "all") {
-          achieved = visitedInRegion(cv.region as string).done;
-        } else if (t === "outside_kanto") {
-          achieved = outsideKantoStores.size >= (cv.min as number);
-        } else if (t === "specific_store") {
-          achieved = visitedMita && cv.store_name === "ラーメン二郎 三田本店";
-        }
-        break;
-      }
-
-      case "all":
-        achieved = visitedAll;
-        break;
-
-      case "call": {
-        const callMap: Record<string, CallKey> = {
-          yasai: "call_yasai",
-          garlic: "call_garlic",
-          abura: "call_abura",
-          karame: "call_karame",
-        };
-        const key = callMap[cv.call as string];
-        if (key) achieved = highCall(key) >= (cv.count as number);
-        break;
-      }
-
-      case "parameter": {
-        const param = cv.param as string;
-        const minReviews = (cv.min_reviews as number) ?? 20;
-        if (param === "pork_score") {
-          achieved = porkFiveCount >= (cv.count as number);
-        } else if (param === "dero_score") {
-          if (total >= minReviews && deroAvg !== null) {
-            if (cv.avg_min !== undefined) achieved = deroAvg >= (cv.avg_min as number);
-            if (cv.avg_max !== undefined) achieved = deroAvg <= (cv.avg_max as number);
-          }
-        } else if (param === "emulsification_score") {
-          if (total >= minReviews && emulAvg !== null) {
-            if (cv.avg_min !== undefined) achieved = emulAvg >= (cv.avg_min as number);
-            if (cv.avg_max !== undefined) achieved = emulAvg <= (cv.avg_max as number);
-          }
-        }
-        break;
-      }
-
-      case "special": {
-        const st = cv.type as string;
-        if (st === "same_day_lunch_dinner") {
-          for (const { hours } of reviewsByDay.values()) {
-            const lunch = hours.some((h) => h >= 10 && h < 14);
-            const dinner = hours.some((h) => h >= 17);
-            if (lunch && dinner) { achieved = true; break; }
-          }
-        } else if (st === "hashigo") {
-          for (const { storeIds } of reviewsByDay.values()) {
-            if (storeIds.size >= (cv.count as number ?? 2)) { achieved = true; break; }
-          }
-        } else if (st === "consecutive_days") {
-          achieved = maxConsecutive >= (cv.count as number ?? 3);
-        } else if (st === "seasonal") {
-          achieved = winterReviews >= (cv.count as number ?? 5);
-        }
-        break;
-      }
+    case "area": {
+      const t = cv.type as string | undefined;
+      if (t === "store_count") return visitedStoreIds.size >= (cv.min as number);
+      if (t === "all") return visitedInRegion(cv.region as string).done;
+      if (t === "outside_kanto") return outsideKantoStores.size >= (cv.min as number);
+      if (t === "specific_store") return visitedMita && cv.store_name === "ラーメン二郎 三田本店";
+      return false;
     }
 
-    if (achieved) newlyAchieved.push(title);
+    case "all":
+      return visitedAll;
+
+    case "call": {
+      const callMap: Record<string, CallKey> = {
+        yasai: "call_yasai", garlic: "call_garlic", abura: "call_abura", karame: "call_karame",
+      };
+      const key = callMap[cv.call as string];
+      return key ? highCall(key) >= (cv.count as number) : false;
+    }
+
+    case "parameter": {
+      const param = cv.param as string;
+      const minReviews = (cv.min_reviews as number) ?? 20;
+      if (param === "pork_score") return porkFiveCount >= (cv.count as number);
+      if (param === "dero_score" && total >= minReviews && deroAvg !== null) {
+        if (cv.avg_min !== undefined) return deroAvg >= (cv.avg_min as number);
+        if (cv.avg_max !== undefined) return deroAvg <= (cv.avg_max as number);
+      }
+      if (param === "emulsification_score" && total >= minReviews && emulAvg !== null) {
+        if (cv.avg_min !== undefined) return emulAvg >= (cv.avg_min as number);
+        if (cv.avg_max !== undefined) return emulAvg <= (cv.avg_max as number);
+      }
+      return false;
+    }
+
+    case "special": {
+      const st = cv.type as string;
+      if (st === "same_day_lunch_dinner") {
+        for (const { hours } of reviewsByDay.values()) {
+          if (hours.some((h) => h >= 10 && h < 14) && hours.some((h) => h >= 17)) return true;
+        }
+      } else if (st === "hashigo") {
+        for (const { storeIds } of reviewsByDay.values()) {
+          if (storeIds.size >= (cv.count as number ?? 2)) return true;
+        }
+      } else if (st === "consecutive_days") {
+        return maxConsecutive >= (cv.count as number ?? 3);
+      } else if (st === "seasonal") {
+        return winterReviews >= (cv.count as number ?? 5);
+      }
+      return false;
+    }
   }
+  return false;
+}
+
+export async function evaluateAndAwardTitles(userId: string): Promise<AwardedTitle[]> {
+  const supabase = createClient();
+
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("id, store_id, created_at, call_garlic, call_yasai, call_abura, call_karame, pork_score, dero_score, emulsification_score")
+    .eq("user_id", userId);
+
+  if (!reviews || reviews.length === 0) return [];
+
+  const { data: stores } = await supabase.from("stores").select("id, name, region");
+  const storeMap = new Map((stores ?? []).map((s) => [s.id, { name: s.name, region: s.region }]));
+
+  const { data: ownedRaw } = await supabase
+    .from("user_titles")
+    .select("title_id, titles(name)")
+    .eq("user_id", userId);
+
+  const ownedNames = new Set(
+    (ownedRaw ?? []).map((ut) => {
+      const t = Array.isArray(ut.titles) ? ut.titles[0] : ut.titles;
+      return (t as { name: string } | null)?.name ?? "";
+    })
+  );
+
+  const { data: allTitles } = await supabase
+    .from("titles")
+    .select("id, name, description, condition_type, condition_value");
+
+  if (!allTitles) return [];
+
+  const stats = computeStats(reviews as ReviewRow[], storeMap);
+  const newlyAchieved = allTitles.filter(
+    (title) => !ownedNames.has(title.name) && evaluateTitle(title as TitleDef, stats)
+  );
 
   if (newlyAchieved.length === 0) return [];
 
-  // Save to user_titles
   await supabase.from("user_titles").upsert(
     newlyAchieved.map((t) => ({ user_id: userId, title_id: t.id }))
   );
 
   return newlyAchieved.map((t) => ({ name: t.name, description: t.description }));
+}
+
+export async function revokeInvalidTitles(userId: string): Promise<AwardedTitle[]> {
+  const supabase = createClient();
+
+  const { data: ownedRaw } = await supabase
+    .from("user_titles")
+    .select("title_id, titles(id, name, description, condition_type, condition_value)")
+    .eq("user_id", userId);
+
+  if (!ownedRaw || ownedRaw.length === 0) return [];
+
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("id, store_id, created_at, call_garlic, call_yasai, call_abura, call_karame, pork_score, dero_score, emulsification_score")
+    .eq("user_id", userId);
+
+  const { data: stores } = await supabase.from("stores").select("id, name, region");
+  const storeMap = new Map((stores ?? []).map((s) => [s.id, { name: s.name, region: s.region }]));
+
+  const stats = computeStats((reviews ?? []) as ReviewRow[], storeMap);
+
+  const revoked: AwardedTitle[] = [];
+  const revokedTitleIds: string[] = [];
+
+  for (const ut of ownedRaw) {
+    const t = Array.isArray(ut.titles) ? ut.titles[0] : ut.titles;
+    if (!t) continue;
+    const title = t as TitleDef;
+    if (!evaluateTitle(title, stats)) {
+      revoked.push({ name: title.name, description: title.description });
+      revokedTitleIds.push(ut.title_id);
+    }
+  }
+
+  if (revokedTitleIds.length > 0) {
+    await supabase
+      .from("user_titles")
+      .delete()
+      .eq("user_id", userId)
+      .in("title_id", revokedTitleIds);
+  }
+
+  return revoked;
 }

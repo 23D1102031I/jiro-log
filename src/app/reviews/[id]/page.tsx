@@ -265,6 +265,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
               <ReviewDetailActions
                 reviewId={id}
                 userId={authUser?.id ?? null}
+                reviewOwnerId={user?.id ?? null}
                 shareUrl={shareUrl}
                 shareText={shareText}
               />
