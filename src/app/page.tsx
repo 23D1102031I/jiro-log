@@ -235,7 +235,7 @@ export default async function Home() {
               </div>
             </div>
 
-            {/* 全店舗グリッド（店舗名付き） */}
+            {/* 全店舗グリッド（スタンプカード画面準拠デザイン） */}
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
               {(allStores ?? []).map((store) => {
                 const visited = visitedStoreIds.has(store.id as string);
@@ -243,18 +243,29 @@ export default async function Home() {
                   <Link
                     key={store.id as string}
                     href={`/stores/${store.id}`}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all hover:opacity-80 ${
+                    className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all hover:opacity-80 ${
                       visited
-                        ? "bg-[#FFFF00] border-black shadow-sm"
-                        : "bg-gray-50 border-gray-200 opacity-60"
+                        ? "bg-[#FFFF00] border-black shadow-md"
+                        : "bg-gray-50 border-gray-200"
                     }`}
                   >
-                    <span className="text-xl">{visited ? "🍜" : "○"}</span>
-                    <p className={`text-[10px] font-bold text-center leading-tight line-clamp-2 ${
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl border-2 ${
+                      visited
+                        ? "bg-black border-black text-[#FFFF00]"
+                        : "bg-white border-gray-300 text-gray-300"
+                    }`}>
+                      {visited ? "🍜" : "○"}
+                    </div>
+                    <p className={`text-xs font-bold leading-tight text-center line-clamp-2 ${
                       visited ? "text-black" : "text-gray-400"
                     }`}>
                       {(store.name as string).replace("ラーメン二郎 ", "")}
                     </p>
+                    {visited && (
+                      <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black text-[#FFFF00] rounded-full flex items-center justify-center text-xs font-black">
+                        ✓
+                      </span>
+                    )}
                   </Link>
                 );
               })}
