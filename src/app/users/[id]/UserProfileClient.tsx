@@ -287,7 +287,9 @@ export function UserProfileClient({
         {/* ③ 実食カレンダー */}
         <section>
           <SectionHeading>実食カレンダー</SectionHeading>
-          <CalendarView userId={userId} isOwner={currentUserId === userId} />
+          <div className="overflow-x-hidden">
+            <CalendarView userId={userId} isOwner={currentUserId === userId} />
+          </div>
         </section>
 
         {/* ④ レビュー履歴 */}
