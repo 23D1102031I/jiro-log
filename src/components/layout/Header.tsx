@@ -50,11 +50,18 @@ export function Header() {
           {/* ロゴ */}
           <Link
             href="/"
-            className="flex-shrink-0 text-2xl tracking-wider select-none"
-            style={{ fontFamily: "var(--font-bebas-neue), 'Bebas Neue', sans-serif" }}
+            className="flex-shrink-0 flex items-center gap-2 select-none"
           >
-            <span className="text-black">Jiro </span>
-            <span className="text-[#FFFF00] bg-black px-1">Log</span>
+            <span
+              className="text-2xl tracking-wider"
+              style={{ fontFamily: "var(--font-bebas-neue), 'Bebas Neue', sans-serif" }}
+            >
+              <span className="text-black">Jiro </span>
+              <span className="text-[#FFFF00] bg-black px-1">Log</span>
+            </span>
+            <span className="text-[10px] font-black bg-gray-800 text-white px-1.5 py-0.5 rounded-full tracking-widest">
+              BETA
+            </span>
           </Link>
 
           {/* デスクトップナビ */}
