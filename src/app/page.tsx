@@ -68,15 +68,52 @@ export default async function Home() {
     .order("created_at", { ascending: false })
     .limit(5);
 
-  // ヒーロー用：最新20件取得してサーバー側で画像ありのものを選択
-  const { data: rawHeroReviews } = await supabase
-    .from("reviews")
-    .select(`id, rating, images, store_id, stores(name, region)`)
-    .order("created_at", { ascending: false })
-    .limit(20);
-  const rawHeroReview = (rawHeroReviews ?? []).find(
-    (r) => Array.isArray(r.images) && (r.images as string[]).length > 0
-  ) ?? null;
+  // ヒーロー用：前日いいね数最多レビュー（画像あり）→フォールバック: 最新画像あり
+  const jstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const jstYesterday = new Date(jstNow);
+  jstYesterday.setUTCDate(jstYesterday.getUTCDate() - 1);
+  const ymd = jstYesterday.toISOString().slice(0, 10);
+  const yesterdayStart = `${ymd}T00:00:00+09:00`;
+  const yesterdayEnd   = `${ymd}T23:59:59+09:00`;
+
+  const { data: yesterdayLikes } = await supabase
+    .from("likes")
+    .select("review_id")
+    .gte("created_at", yesterdayStart)
+    .lte("created_at", yesterdayEnd);
+
+  // review_id ごとのいいね数を集計してトップを選ぶ
+  const likeCounts: Record<string, number> = {};
+  for (const { review_id } of yesterdayLikes ?? []) {
+    if (review_id) likeCounts[review_id] = (likeCounts[review_id] ?? 0) + 1;
+  }
+  const topReviewIds = Object.entries(likeCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id]) => id);
+
+  let rawHeroReview = null;
+  if (topReviewIds.length > 0) {
+    const { data: candidates } = await supabase
+      .from("reviews")
+      .select(`id, rating, images, store_id, stores(name, region)`)
+      .in("id", topReviewIds.slice(0, 10));
+    // いいね数順 & 画像ありで選択
+    rawHeroReview = topReviewIds
+      .map(id => (candidates ?? []).find(r => r.id === id))
+      .find(r => r && Array.isArray(r.images) && (r.images as string[]).length > 0)
+      ?? null;
+  }
+  // フォールバック: 最新画像あり
+  if (!rawHeroReview) {
+    const { data: fallback } = await supabase
+      .from("reviews")
+      .select(`id, rating, images, store_id, stores(name, region)`)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    rawHeroReview = (fallback ?? []).find(
+      r => Array.isArray(r.images) && (r.images as string[]).length > 0
+    ) ?? null;
+  }
 
   const reviews: Review[] = (rawReviews ?? []).map((r) => ({
     id: r.id as string,
