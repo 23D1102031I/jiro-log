@@ -68,6 +68,15 @@ export default async function Home() {
     .order("created_at", { ascending: false })
     .limit(5);
 
+  // ヒーロー用：画像ありのレビューから最新1件
+  const { data: rawHeroReview } = await supabase
+    .from("reviews")
+    .select(`id, rating, images, store_id, stores(name, region)`)
+    .not("images", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
   const reviews: Review[] = (rawReviews ?? []).map((r) => ({
     id: r.id as string,
     rating: r.rating as number,
@@ -110,11 +119,19 @@ export default async function Home() {
     visitedCount = visitedStoreIds.size;
   }
 
-  const heroReview = reviews[0];
+  type HeroStore = { name: string | null; region: string | null };
+  const heroReview = rawHeroReview
+    ? {
+        id: rawHeroReview.id as string,
+        rating: rawHeroReview.rating as number,
+        images: rawHeroReview.images as string[] | null,
+        store_id: rawHeroReview.store_id as string,
+        stores: (Array.isArray(rawHeroReview.stores)
+          ? (rawHeroReview.stores[0] as HeroStore ?? null)
+          : (rawHeroReview.stores as HeroStore | null)),
+      }
+    : null;
   const heroImage = heroReview?.images?.[0] ?? null;
-  const heroStoreName = heroReview?.stores?.name
-    ? heroReview.stores.name.replace("ラーメン二郎 ", "").replace("ラーメン二郎", "")
-    : "豚星";
 
   return (
     <>
@@ -130,7 +147,7 @@ export default async function Home() {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={heroImage}
-                alt={heroStoreName}
+                alt={heroReview?.stores?.name ?? ""}
                 className="absolute inset-0 w-full h-full object-cover opacity-80"
               />
             )}
@@ -149,16 +166,8 @@ export default async function Home() {
             <div className="absolute inset-0 flex items-center px-6 md:px-12 lg:px-20">
               <div className="max-w-lg">
                 <div className="w-10 h-1 bg-[#FFFF00] mb-3 rounded-full" />
-                <h1
-                  className="text-4xl md:text-6xl font-black text-white leading-tight"
-                  style={{ fontFamily: "var(--font-bebas-neue), 'Bebas Neue', sans-serif" }}
-                >
-                  この神豚、{" "}
-                  <br />
-                  {heroStoreName}。
-                </h1>
                 {heroReview && (
-                  <p className="text-gray-200 text-sm mt-2">
+                  <p className="text-gray-200 text-sm mb-2">
                     {heroReview.stores?.name ?? ""}
                     {" "}
                     <span className="text-[#FFFF00] font-bold">★{Number(heroReview.rating).toFixed(1)}</span>
@@ -166,7 +175,7 @@ export default async function Home() {
                 )}
                 <Link
                   href={heroReview ? `/reviews/${heroReview.id}` : "/post"}
-                  className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFFF00] text-black font-black text-sm rounded-lg hover:bg-yellow-300 transition-colors"
+                  className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFFF00] text-black font-black text-sm rounded-lg hover:bg-yellow-300 transition-colors"
                 >
                   詳しく見る →
                 </Link>
