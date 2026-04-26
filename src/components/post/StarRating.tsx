@@ -69,25 +69,8 @@ export function StarRating({ value, onChange }: Props) {
         />
       </div>
 
-      {/* Fine-tune slider */}
-      {value > 0 && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 w-6">1.0</span>
-          <input
-            type="range"
-            min={1}
-            max={5}
-            step={0.1}
-            value={value}
-            onChange={(e) => onChange(parseFloat(e.target.value))}
-            className="flex-1 accent-[#FFFF00]"
-          />
-          <span className="text-xs text-gray-400 w-6 text-right">5.0</span>
-        </div>
-      )}
-
       {value === 0 && (
-        <p className="text-xs text-gray-400">星・スライダー・数値入力で選択（1.0〜5.0）</p>
+        <p className="text-xs text-gray-400">星または数値で選択（1.0〜5.0）</p>
       )}
     </div>
   );
