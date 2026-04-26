@@ -4,7 +4,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { createClient } from "@/lib/supabase/server";
 import { RadarChart } from "@/components/mypage/RadarChart";
-import { MapPin, Clock, Calendar, Star } from "lucide-react";
+import { WeeklyHoursPanel } from "@/components/stores/WeeklyHoursPanel";
+import type { WeeklyHours } from "@/components/stores/WeeklyHoursPanel";
+import { MapPin, Clock, Star } from "lucide-react";
 
 const PARAM_LABELS = [
   { label: "麺の太さ" },
@@ -32,7 +34,7 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
 
   const { data: store } = await supabase
     .from("stores")
-    .select("id, name, address, region, business_hours, closed_days, tags")
+    .select("id, name, address, region, business_hours, closed_days, tags, weekly_hours")
     .eq("id", id)
     .single();
 
@@ -83,18 +85,6 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
       ? reviewList.reduce((a, r) => a + (r.rating ?? 0), 0) / totalReviews
       : 0;
 
-  type BusinessHoursEntry = string | { open?: string; close?: string } | Record<string, string>;
-  type BusinessHours = Record<string, BusinessHoursEntry>;
-  const businessHours: BusinessHours | null =
-    store.business_hours && typeof store.business_hours === "object"
-      ? (store.business_hours as BusinessHours)
-      : null;
-
-  // 簡易営業判定（business_hoursがあれば）
-  const now = new Date();
-  const jstHour = (now.getUTCHours() + 9) % 24;
-  const isOpen = businessHours ? jstHour >= 10 && jstHour < 22 : null; // 簡易判定
-
   return (
     <>
       <Header />
@@ -124,20 +114,17 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
               <h1 className="text-3xl font-black text-gray-900 mb-1">{store.name}</h1>
               {store.address && <p className="text-sm text-gray-400 mb-3">{store.address}</p>}
 
-              {/* 営業時間 + 定休日 */}
-              <div className="space-y-1 mb-4 text-sm text-gray-600">
-                {businessHours && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    営業時間情報あり
-                  </div>
-                )}
-                {store.closed_days && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    定休日: {store.closed_days}
-                  </div>
-                )}
+              {/* 曜日別営業時間 */}
+              <div className="mb-4">
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-2">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="font-medium">営業時間</span>
+                </div>
+                {store.weekly_hours ? (
+                  <WeeklyHoursPanel weeklyHours={store.weekly_hours as WeeklyHours} />
+                ) : store.closed_days ? (
+                  <p className="text-sm text-gray-500">定休日: {store.closed_days}</p>
+                ) : null}
               </div>
 
               {/* 評価 + OPENバッジ */}
@@ -148,11 +135,6 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
                   ))}
                   <span className="text-xl font-black ml-1">{avgRating > 0 ? avgRating.toFixed(1) : "—"}</span>
                 </div>
-                {isOpen !== null && (
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-black ${isOpen ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
-                    {isOpen ? "OPEN" : "CLOSED"}
-                  </span>
-                )}
               </div>
 
               {/* アクションボタン3つ */}
