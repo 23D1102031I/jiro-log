@@ -396,7 +396,7 @@ export function CalendarView({ userId, isOwner }: Props) {
                     disabled={!hasReview}
                     className={[
                       "relative aspect-square rounded-xl overflow-hidden transition-all text-xs",
-                      isSelected ? "ring-2 ring-black shadow-lg scale-[1.06]" : "",
+                      isSelected ? "ring-2 ring-black shadow-lg" : "",
                       isToday && !isSelected ? "ring-2 ring-gray-400" : "",
                       hasReview ? "cursor-pointer" : "cursor-default",
                     ].join(" ")}
