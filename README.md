@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JIRO LOG — ジロリアンの記録帳
 
-## Getting Started
+ラーメン二郎直系店舗専用のレビュー＆スタンプラリーWebアプリ。
 
-First, run the development server:
+🍜 **サイトURL**: [jiro-log-tau.vercel.app](https://jiro-log-tau.vercel.app)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 基本情報
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| 項目 | 内容 |
+|------|------|
+| 制作期間 | 2026/4/24〜2026/4/26（β版リリース）、2026/4/27〜改善中 |
+| 開発人数 | 個人制作 |
+| 使用ツール | Claude Code, Gemini Pro, ChatGPT Images 2.0, Supabase, Git, Vercel, Resend |
+| ソースコード | [github.com/haruto2082/jiro-log](https://github.com/haruto2082/jiro-log) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 主な機能
 
-To learn more about Next.js, take a look at the following resources:
+### 記録・投稿
+- レビュー投稿（評価・コール・パラメータ・画像）
+- 訪問カレンダー
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 発見・探索
+- 店舗マップ（OpenStreetMap）
+- 店舗詳細・混雑時間帯チャート
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### ゲーミフィケーション
+- スタンプカード（店舗制覇）
+- 称号システム（条件達成で自動付与・剥奪）
 
-## Deploy on Vercel
+### ソーシャル
+- タイムライン
+- いいね
+- ユーザープロフィール公開・シェア
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### マイページ
+- 実食数・制覇店舗・いいね数
+- My Jiro Identity（レーダーチャート）
+- レビュー履歴・店舗絞り込み
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### その他
+- Googleログイン
+- お問い合わせフォーム
+
+---
+
+## 開発動機
+
+私自身が二郎ラーメンが大好きで、二郎好きな友人同士でたまにレビューしているため、二郎に特化したレビュー（ニンニク・野菜など）を投稿できるサイトがあれば面白いと思ったことがきっかけです。
+
+また、Claude Codeを最近触り始め、AI開発についてのZennやYouTubeをたくさん見る中で、Webサイトの作り方や開発の進め方、ChatGPT Images 2.0などの情報を知り、実際に開発してみたくなりました。
+
+---
+
+## アピールポイント
+
+### AI駆動開発フロー
+
+効率よく高品質な実装を実現するために、2つのサブエージェントを設計しました。
+
+**Generator エージェント**
+仕様書・スプリント管理ファイル・LP画像に基づいて実装と自己評価を行うエージェント。ビルドエラーの自己修正・合格基準チェックリストの確認・Evaluatorへの申し送りレポートを出力します。
+
+**Evaluator エージェント**
+Playwright MCPを使ったUI評価エージェント。Generatorの自己評価レポートを受け取り、実際にブラウザを操作してスプリントの合格基準を検証し、合否判定とフィードバックを出力します。
+
+この2つをループさせることで、品質を担保しながら開発を効率よく進めました。
+
+### 仕様策定のAI活用
+
+仕様策定の際はGeminiに対して「私の考えをすべて引き出すよう質問・提案をする」よう指示し、コンサルティング形式の対話を通じて仕様を詰めました。これにより、当初想定していなかった機能（マップ・アカウント管理など）のアイデアも生まれました。
+
+---
+
+## 技術スタック
+
+| カテゴリ | 技術 |
+|----------|------|
+| フロントエンド | Next.js (App Router) / TypeScript / Tailwind CSS |
+| バックエンド・DB | Supabase (Auth / PostgreSQL / Storage) |
+| 地図 | React Leaflet / OpenStreetMap |
+| メール送信 | Resend |
+| デプロイ | Vercel |
+| バージョン管理 | Git / GitHub |
+| AI開発支援 | Claude Code / Gemini Pro / ChatGPT Images 2.0 |
+
+---
+
+## 免責事項
+
+当サイトは非公式ファンサイトであり、有限会社ラーメン二郎とは一切関係ありません。
