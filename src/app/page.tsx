@@ -1,6 +1,3 @@
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { FAB } from "@/components/home/FAB";
 import { TimelineClient } from "@/components/home/TimelineClient";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -173,8 +170,6 @@ export default async function Home() {
 
   return (
     <>
-      <Header />
-
       <main className="flex-1 bg-white">
 
         {/* ① ヒーローバナー（LP準拠：全幅画像＋左グラデーション＋テキストオーバーレイ） */}
@@ -283,6 +278,7 @@ export default async function Home() {
                   <Link
                     key={store.id as string}
                     href={`/stores/${store.id}`}
+                    prefetch={false}
                     className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all hover:opacity-80 ${
                       visited
                         ? "bg-[#FFFF00] border-black shadow-md"
@@ -375,9 +371,6 @@ export default async function Home() {
         </section>
 
       </main>
-
-      <FAB />
-      <Footer />
     </>
   );
 }

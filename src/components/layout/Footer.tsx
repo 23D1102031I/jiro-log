@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+/**
+ * Footer navigation は意図的に主要 4 導線 (ホーム / 店舗マップ / スタンプカード /
+ * レビュー投稿) に限定する。Calendar / マイページ / ログイン等の補助導線は banner の
+ * ハンバーガーメニュー (global ナビ) 側で提供する二段構成。
+ * 意図: 視覚的ノイズ削減と主要 CTA への動線集中。task_043_phase2 minor_01 / 殿令 (B) 採択。
+ */
 const footerLinks = [
   { href: "/", label: "ホーム" },
   { href: "/map", label: "店舗マップ" },
@@ -35,6 +41,7 @@ export function Footer() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={false}
                 className="text-sm text-gray-300 hover:text-[#FFFF00] transition-colors"
               >
                 {link.label}
@@ -49,13 +56,13 @@ export function Footer() {
             当サイトは非公式ファンサイトであり、有限会社ラーメン二郎とは一切関係ありません。
           </p>
           <div className="flex gap-4 mt-3">
-            <Link href="/terms" className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
+            <Link href="/terms" prefetch={false} className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
               利用規約
             </Link>
-            <Link href="/privacy" className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
+            <Link href="/privacy" prefetch={false} className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
               プライバシーポリシー
             </Link>
-            <Link href="/contact" className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
+            <Link href="/contact" prefetch={false} className="text-xs text-gray-500 hover:text-[#FFFF00] transition-colors">
               お問い合わせ
             </Link>
           </div>
